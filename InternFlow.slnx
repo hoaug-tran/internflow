@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="InternFlow.API/InternFlow.API.csproj" />
+  <Project Path="InternFlow.Application/InternFlow.Application.csproj" />
+  <Project Path="InternFlow.Domain/InternFlow.Domain.csproj" />
+  <Project Path="InternFlow.Infrastructure/InternFlow.Infrastructure.csproj" />
+  <Project Path="InternFlow.Shared/InternFlow.Shared.csproj" />
+</Solution>
