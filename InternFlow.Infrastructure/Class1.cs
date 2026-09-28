@@ -1,4 +1,4 @@
-﻿namespace InternFlow.Infrastructure;
+namespace InternFlow.Infrastructure;
 
 public class Class1
 {
