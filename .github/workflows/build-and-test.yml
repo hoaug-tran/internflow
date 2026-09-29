@@ -7,8 +7,22 @@ on:
     branches: [ main ]
 
 jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Check formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+
   build-and-test:
     runs-on: ubuntu-latest
+    needs: format-check
     steps:
       - uses: actions/checkout@v4
 

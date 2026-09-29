@@ -1,4 +1,4 @@
-﻿namespace InternFlow.Shared;
+namespace InternFlow.Shared;
 
 public class Class1
 {

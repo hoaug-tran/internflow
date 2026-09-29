@@ -5,7 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Cấu hình DbContext (tạm thời cấu hình chuỗi kết nối hoặc in-memory nếu chưa có DB thật)
+// Add services to the container.
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// 1. Cấu hình DbContext
 builder.Services.AddDbContext<InternFlowDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -17,13 +21,13 @@ builder.Services.AddDbContext<InternFlowDbContext>(options =>
 builder.Services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
 builder.Services.AddScoped<IInternshipQueryService, InternshipQueryService>();
 
-builder.Services.AddOpenApi();
-
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
