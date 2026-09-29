@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <ItemGroup>
+    <ProjectReference Include="..\InternFlow.Domain\InternFlow.Domain.csproj" />
+    <ProjectReference Include="..\InternFlow.Shared\InternFlow.Shared.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
