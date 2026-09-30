@@ -1,4 +1,5 @@
 namespace InternFlow.Domain.Enum;
+
 public enum TaskStatusValue
 {
     Todo = 0,
