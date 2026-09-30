@@ -1,5 +1,3 @@
-
-using InternFlow.Domain.Enum;
 using InternFlow.Domain.Enums;
 using InternFlow.Domain.Tasks;
 using Xunit;

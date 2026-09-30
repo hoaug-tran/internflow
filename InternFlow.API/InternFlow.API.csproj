@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.12">
+
+
+    <ProjectReference Include="..\InternFlow.Application\InternFlow.Application.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.*">
+
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -15,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+
     <ProjectReference Include="..\InternFlow.Application\InternFlow.Application.csproj" />
+
     <ProjectReference Include="..\InternFlow.Infrastructure\InternFlow.Infrastructure.csproj" />
   </ItemGroup>
 

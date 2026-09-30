@@ -1,4 +1,4 @@
-namespace InternFlow.Domain.Enum;
+namespace InternFlow.Domain.Enums;
 
 public enum TaskStatusValue
 {
