@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InternFlow.Domain\InternFlow.Domain.csproj" />
+    <ProjectReference Include="..\InternFlow.Shared\InternFlow.Shared.csproj" />
   </ItemGroup>
 
 </Project>
