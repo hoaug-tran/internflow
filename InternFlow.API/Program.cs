@@ -1,5 +1,4 @@
 using InternFlow.API.Middlewares;
-using InternFlow.Shared.Exceptions;
 using Serilog;
 
 
@@ -9,7 +8,6 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger()
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 
 
@@ -26,26 +24,25 @@ try
     builder.Services.AddSwaggerGen();
 
 
+
     var app = builder.Build();
 
-    app.UseMiddleware<TraceIdMiddleware>();      // 1. gán traceId trước
-    app.UseSerilogRequestLogging();              // 2. log request có TraceId
-    app.UseMiddleware<ExceptionHandlingMiddleware>(); // 3. bắt lỗi
+app.UseMiddleware<TraceIdMiddleware>();      // 1. gán traceId trước
+app.UseSerilogRequestLogging();              // 2. log request có TraceId
+app.UseMiddleware<ExceptionHandlingMiddleware>(); // 3. bắt lỗi
 
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-    app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 
-    app.MapGet("/test/notfound", () => { throw new NotFoundException("Không tìm thấy dữ liệu"); });
-    app.MapGet("/test/error", () => { throw new Exception("boom"); });
 
-    app.Run();
+app.Run();
 }
 catch (Exception ex)
 {
@@ -55,5 +52,4 @@ finally
 {
     Log.CloseAndFlush();
 }
-
 
