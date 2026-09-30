@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 // 1. Cấu hình DbContext
 builder.Services.AddDbContext<InternFlowDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                            ?? "Server=localhost;Database=InternFlowDb;Trusted_Connection=True;TrustServerCertificate=True;";
     options.UseSqlServer(connectionString);
 });

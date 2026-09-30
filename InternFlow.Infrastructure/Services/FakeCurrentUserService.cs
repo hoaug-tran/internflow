@@ -16,6 +16,6 @@ public class FakeCurrentUserService : ICurrentUserService
     public bool IsAuthenticated => true;
 
     // So sánh chuỗi không phân biệt hoa thường
-    public bool IsInRole(string role) => 
+    public bool IsInRole(string role) =>
         string.Equals(role, UserRoles.Mentor, StringComparison.OrdinalIgnoreCase);
 }
