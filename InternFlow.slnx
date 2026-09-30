@@ -4,5 +4,5 @@
   <Project Path="InternFlow.Domain/InternFlow.Domain.csproj" />
   <Project Path="InternFlow.Infrastructure/InternFlow.Infrastructure.csproj" />
   <Project Path="InternFlow.Shared/InternFlow.Shared.csproj" />
-  <Project Path="InternFlow.Domain.Tests/InternFlow.Domain.Tests.csproj" />
-</Solution>
+  <Project Path="tests/InternFlow.Domain.Tests/InternFlow.Domain.Tests.csproj" />
+</Solution> 
