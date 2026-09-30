@@ -27,22 +27,22 @@ try
 
     var app = builder.Build();
 
-app.UseMiddleware<TraceIdMiddleware>();      // 1. gán traceId trước
-app.UseSerilogRequestLogging();              // 2. log request có TraceId
-app.UseMiddleware<ExceptionHandlingMiddleware>(); // 3. bắt lỗi
+    app.UseMiddleware<TraceIdMiddleware>();      // 1. gán traceId trước
+    app.UseSerilogRequestLogging();              // 2. log request có TraceId
+    app.UseMiddleware<ExceptionHandlingMiddleware>(); // 3. bắt lỗi
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
-app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 
 
 
-app.Run();
+    app.Run();
 }
 catch (Exception ex)
 {
