@@ -1,4 +1,12 @@
 <Solution>
+  <Folder Name="/Solution_Item/">
+    <File Path=".dockerignore" />
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+    <File Path="README-docker.md" />
+  </Folder>
   <Project Path="InternFlow.API/InternFlow.API.csproj" />
   <Project Path="InternFlow.Application/InternFlow.Application.csproj" />
   <Project Path="InternFlow.Domain/InternFlow.Domain.csproj" />

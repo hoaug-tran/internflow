@@ -20,13 +20,17 @@ services:
         condition: service_healthy
     networks:
       - internflow-net
+    volumes:
+      - ./logs:/app/logs
+
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: internflow-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD:-Dev@12345678}"
+
     ports:
       - "1433:1433"
     volumes:

@@ -1,0 +1,873 @@
+using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace InternFlow.Infrastructure.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddEvaluationModule : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.EnsureSchema(
+                name: "dbo");
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    PasswordHash = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Role = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    FailedLoginCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    LockoutEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.UniqueConstraint("UQ_Users_Id_Role", x => new { x.Id, x.Role });
+                    table.CheckConstraint("CK_Users_Role", "[Role] IN ('Admin', 'Mentor', 'Intern')");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InternProfiles",
+                schema: "dbo",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserRole = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "Intern"),
+                    StudentCode = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
+                    University = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Major = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    Phone = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: true),
+                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
+                    CvUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InternProfiles", x => x.UserId);
+                    table.CheckConstraint("CK_InternProfiles_Role", "[UserRole] = 'Intern'");
+                    table.ForeignKey(
+                        name: "FK_InternProfiles_Users",
+                        columns: x => new { x.UserId, x.UserRole },
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumns: new[] { "Id", "Role" },
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Internships",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "Planned"),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Internships", x => x.Id);
+                    table.CheckConstraint("CK_Batches_Dates", "[EndDate] > [StartDate]");
+                    table.CheckConstraint("CK_Batches_Status", "[Status] IN ('Planned', 'Active', 'Closed')");
+                    table.ForeignKey(
+                        name: "FK_Batches_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MentorProfiles",
+                schema: "dbo",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserRole = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "Mentor"),
+                    Department = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    JobTitle = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    Expertise = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    Phone = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: true),
+                    MaxMentees = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MentorProfiles", x => x.UserId);
+                    table.CheckConstraint("CK_MentorProfiles_Role", "[UserRole] = 'Mentor'");
+                    table.ForeignKey(
+                        name: "FK_MentorProfiles_Users",
+                        columns: x => new { x.UserId, x.UserRole },
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumns: new[] { "Id", "Role" },
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TokenHash = table.Column<string>(type: "char(64)", unicode: false, fixedLength: true, maxLength: 64, nullable: false),
+                    FamilyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    CreatedByIp = table.Column<string>(type: "varchar(45)", unicode: false, maxLength: 45, nullable: true),
+                    UserAgent = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    UsedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReplacedByTokenId = table.Column<long>(type: "bigint", nullable: true),
+                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RevokedReason = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RT_ReplacedBy",
+                        column: x => x.ReplacedByTokenId,
+                        principalSchema: "dbo",
+                        principalTable: "RefreshTokens",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RT_Users",
+                        column: x => x.UserId,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BatchInterns",
+                schema: "dbo",
+                columns: table => new
+                {
+                    BatchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InternId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InternRole = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "Intern"),
+                    Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "InProgress"),
+                    JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    AddedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BatchInterns", x => new { x.BatchId, x.InternId });
+                    table.CheckConstraint("CK_BI_Role", "[InternRole] = 'Intern'");
+                    table.CheckConstraint("CK_BI_Status", "[Status] IN ('InProgress', 'Completed', 'DroppedOut', 'Failed')");
+                    table.ForeignKey(
+                        name: "FK_BI_AddedBy",
+                        column: x => x.AddedBy,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_BI_Batch",
+                        column: x => x.BatchId,
+                        principalSchema: "dbo",
+                        principalTable: "Internships",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BI_Intern",
+                        columns: x => new { x.InternId, x.InternRole },
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumns: new[] { "Id", "Role" },
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BatchMentors",
+                schema: "dbo",
+                columns: table => new
+                {
+                    BatchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MentorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MentorRole = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false, defaultValue: "Mentor"),
+                    JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    AddedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BatchMentors", x => new { x.BatchId, x.MentorId });
+                    table.CheckConstraint("CK_BM_Role", "[MentorRole] = 'Mentor'");
+                    table.ForeignKey(
+                        name: "FK_BM_AddedBy",
+                        column: x => x.AddedBy,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_BM_Batch",
+                        column: x => x.BatchId,
+                        principalSchema: "dbo",
+                        principalTable: "Internships",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BM_Mentor",
+                        columns: x => new { x.MentorId, x.MentorRole },
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumns: new[] { "Id", "Role" },
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EvaluationPeriods",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    InternshipId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EvaluationPeriods", x => x.Id);
+                    table.CheckConstraint("CK_EvaluationPeriods_Dates", "[EndDate] >= [StartDate]");
+                    table.ForeignKey(
+                        name: "FK_EvaluationPeriods_Internships_InternshipId",
+                        column: x => x.InternshipId,
+                        principalSchema: "dbo",
+                        principalTable: "Internships",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Projects",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    InternshipId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Projects", x => x.Id);
+                    table.CheckConstraint("CK_Projects_Dates", "[EndDate] IS NULL OR [StartDate] IS NULL OR [EndDate] >= [StartDate]");
+                    table.ForeignKey(
+                        name: "FK_Projects_Internships_InternshipId",
+                        column: x => x.InternshipId,
+                        principalSchema: "dbo",
+                        principalTable: "Internships",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Projects_Users_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MentorAssignments",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BatchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InternId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MentorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    AssignedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    IsCurrent = table.Column<bool>(type: "bit", nullable: false, computedColumnSql: "CASE WHEN [EndedAt] IS NULL THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END", stored: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MentorAssignments", x => x.Id);
+                    table.CheckConstraint("CK_MA_Ended", "[EndedAt] IS NULL OR [EndedAt] >= [AssignedAt]");
+                    table.ForeignKey(
+                        name: "FK_MA_AssignedBy",
+                        column: x => x.AssignedBy,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MA_BatchIntern",
+                        columns: x => new { x.BatchId, x.InternId },
+                        principalSchema: "dbo",
+                        principalTable: "BatchInterns",
+                        principalColumns: new[] { "BatchId", "InternId" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MA_BatchMentor",
+                        columns: x => new { x.BatchId, x.MentorId },
+                        principalSchema: "dbo",
+                        principalTable: "BatchMentors",
+                        principalColumns: new[] { "BatchId", "MentorId" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MentorAssignments_Internships_BatchId",
+                        column: x => x.BatchId,
+                        principalSchema: "dbo",
+                        principalTable: "Internships",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Criteria",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    EvaluationPeriodId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    Weight = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    DisplayOrder = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Criteria", x => x.Id);
+                    table.CheckConstraint("CK_Criteria_Weight", "[Weight] > 0 AND [Weight] <= 100");
+                    table.ForeignKey(
+                        name: "FK_Criteria_EvaluationPeriods_EvaluationPeriodId",
+                        column: x => x.EvaluationPeriodId,
+                        principalSchema: "dbo",
+                        principalTable: "EvaluationPeriods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Evaluations",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    EvaluationPeriodId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InternId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    EvaluatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    OverallComment = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Evaluations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Evaluations_EvaluationPeriods_EvaluationPeriodId",
+                        column: x => x.EvaluationPeriodId,
+                        principalSchema: "dbo",
+                        principalTable: "EvaluationPeriods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Evaluations_Users_EvaluatorId",
+                        column: x => x.EvaluatorId,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Evaluations_Users_InternId",
+                        column: x => x.InternId,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProjectMembers",
+                schema: "dbo",
+                columns: table => new
+                {
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Role = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectMembers", x => new { x.ProjectId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_ProjectMembers_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalSchema: "dbo",
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProjectMembers_Users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tasks",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AssigneeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
+                    Status = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    Priority = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    DueDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalSchema: "dbo",
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Users_AssigneeId",
+                        column: x => x.AssigneeId,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EvaluationDetails",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    EvaluationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CriterionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Score = table.Column<decimal>(type: "decimal(4,2)", precision: 4, scale: 2, nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EvaluationDetails", x => x.Id);
+                    table.CheckConstraint("CK_EvaluationDetails_Score", "[Score] >= 0 AND [Score] <= 10");
+                    table.ForeignKey(
+                        name: "FK_EvaluationDetails_Criteria_CriterionId",
+                        column: x => x.CriterionId,
+                        principalSchema: "dbo",
+                        principalTable: "Criteria",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_EvaluationDetails_Evaluations_EvaluationId",
+                        column: x => x.EvaluationId,
+                        principalSchema: "dbo",
+                        principalTable: "Evaluations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkLogs",
+                schema: "dbo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    TaskItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Hours = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkLogs", x => x.Id);
+                    table.CheckConstraint("CK_WorkLogs_Hours", "[Hours] > 0 AND [Hours] <= 24");
+                    table.ForeignKey(
+                        name: "FK_WorkLogs_Tasks_TaskItemId",
+                        column: x => x.TaskItemId,
+                        principalSchema: "dbo",
+                        principalTable: "Tasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WorkLogs_Users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "dbo",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BatchInterns_AddedBy",
+                schema: "dbo",
+                table: "BatchInterns",
+                column: "AddedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BatchInterns_InternId_InternRole",
+                schema: "dbo",
+                table: "BatchInterns",
+                columns: new[] { "InternId", "InternRole" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BI_Intern",
+                schema: "dbo",
+                table: "BatchInterns",
+                column: "InternId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BI_Status",
+                schema: "dbo",
+                table: "BatchInterns",
+                columns: new[] { "BatchId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BatchMentors_AddedBy",
+                schema: "dbo",
+                table: "BatchMentors",
+                column: "AddedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BatchMentors_MentorId_MentorRole",
+                schema: "dbo",
+                table: "BatchMentors",
+                columns: new[] { "MentorId", "MentorRole" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BM_Mentor",
+                schema: "dbo",
+                table: "BatchMentors",
+                column: "MentorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Criteria_EvaluationPeriodId_DisplayOrder",
+                schema: "dbo",
+                table: "Criteria",
+                columns: new[] { "EvaluationPeriodId", "DisplayOrder" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EvaluationDetails_CriterionId",
+                schema: "dbo",
+                table: "EvaluationDetails",
+                column: "CriterionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EvaluationDetails_EvaluationId_CriterionId",
+                schema: "dbo",
+                table: "EvaluationDetails",
+                columns: new[] { "EvaluationId", "CriterionId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EvaluationPeriods_InternshipId_Name",
+                schema: "dbo",
+                table: "EvaluationPeriods",
+                columns: new[] { "InternshipId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Evaluations_EvaluationPeriodId_InternId_EvaluatorId",
+                schema: "dbo",
+                table: "Evaluations",
+                columns: new[] { "EvaluationPeriodId", "InternId", "EvaluatorId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Evaluations_EvaluatorId",
+                schema: "dbo",
+                table: "Evaluations",
+                column: "EvaluatorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Evaluations_InternId",
+                schema: "dbo",
+                table: "Evaluations",
+                column: "InternId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InternProfiles_UserId_UserRole",
+                schema: "dbo",
+                table: "InternProfiles",
+                columns: new[] { "UserId", "UserRole" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "UX_InternProfiles_StudentCode",
+                schema: "dbo",
+                table: "InternProfiles",
+                column: "StudentCode",
+                unique: true,
+                filter: "[StudentCode] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Batches_Status",
+                schema: "dbo",
+                table: "Internships",
+                columns: new[] { "Status", "StartDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Internships_CreatedBy",
+                schema: "dbo",
+                table: "Internships",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "UQ_Batches_Name",
+                schema: "dbo",
+                table: "Internships",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MA_CurrentByMentor",
+                schema: "dbo",
+                table: "MentorAssignments",
+                columns: new[] { "MentorId", "BatchId" },
+                filter: "[EndedAt] IS NULL")
+                .Annotation("SqlServer:Include", new[] { "InternId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MA_HistoryByIntern",
+                schema: "dbo",
+                table: "MentorAssignments",
+                columns: new[] { "BatchId", "InternId", "AssignedAt" },
+                descending: new[] { false, false, true });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MentorAssignments_AssignedBy",
+                schema: "dbo",
+                table: "MentorAssignments",
+                column: "AssignedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MentorAssignments_BatchId_MentorId",
+                schema: "dbo",
+                table: "MentorAssignments",
+                columns: new[] { "BatchId", "MentorId" });
+
+            migrationBuilder.CreateIndex(
+                name: "UX_MA_OneCurrentMentor",
+                schema: "dbo",
+                table: "MentorAssignments",
+                columns: new[] { "BatchId", "InternId" },
+                unique: true,
+                filter: "[EndedAt] IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MentorProfiles_UserId_UserRole",
+                schema: "dbo",
+                table: "MentorProfiles",
+                columns: new[] { "UserId", "UserRole" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectMembers_UserId",
+                schema: "dbo",
+                table: "ProjectMembers",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_CreatedBy",
+                schema: "dbo",
+                table: "Projects",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_InternshipId_Name",
+                schema: "dbo",
+                table: "Projects",
+                columns: new[] { "InternshipId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_Family",
+                schema: "dbo",
+                table: "RefreshTokens",
+                column: "FamilyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_Purge",
+                schema: "dbo",
+                table: "RefreshTokens",
+                column: "ExpiresAt")
+                .Annotation("SqlServer:Include", new[] { "RevokedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_ReplacedByTokenId",
+                schema: "dbo",
+                table: "RefreshTokens",
+                column: "ReplacedByTokenId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                schema: "dbo",
+                table: "RefreshTokens",
+                column: "UserId")
+                .Annotation("SqlServer:Include", new[] { "FamilyId", "ExpiresAt", "RevokedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "UQ_RefreshTokens_Hash",
+                schema: "dbo",
+                table: "RefreshTokens",
+                column: "TokenHash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_AssigneeId",
+                schema: "dbo",
+                table: "Tasks",
+                column: "AssigneeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_ProjectId_Status",
+                schema: "dbo",
+                table: "Tasks",
+                columns: new[] { "ProjectId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "UQ_Users_Email",
+                schema: "dbo",
+                table: "Users",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkLogs_TaskItemId_WorkDate",
+                schema: "dbo",
+                table: "WorkLogs",
+                columns: new[] { "TaskItemId", "WorkDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkLogs_UserId",
+                schema: "dbo",
+                table: "WorkLogs",
+                column: "UserId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "EvaluationDetails",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "InternProfiles",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "MentorAssignments",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "MentorProfiles",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "ProjectMembers",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "WorkLogs",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "Criteria",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "Evaluations",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "BatchInterns",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "BatchMentors",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "Tasks",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "EvaluationPeriods",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "Projects",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "Internships",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "Users",
+                schema: "dbo");
+        }
+    }
+}

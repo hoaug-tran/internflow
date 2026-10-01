@@ -1,35 +1,68 @@
-using InternFlow.Application.Common.Interfaces;
-using InternFlow.Infrastructure.Data;
-using InternFlow.Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+using InternFlow.API.Extensions;
+using InternFlow.API.Middlewares;
+using Serilog;
+
+Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
 
 // Add services to the container.
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-// 1. Cấu hình DbContext
-builder.Services.AddDbContext<InternFlowDbContext>(options =>
+
+
+
+
+
+try
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                           ?? "Server=localhost;Database=InternFlowDb;Trusted_Connection=True;TrustServerCertificate=True;";
-    options.UseSqlServer(connectionString);
-});
+    var builder = WebApplication.CreateBuilder(args);
 
-// 2. Đăng ký các Service bàn giao cho team
-builder.Services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
-builder.Services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+    builder.Host.UseSerilog((ctx, services, cfg) => cfg
+        .ReadFrom.Configuration(ctx.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext());
 
-var app = builder.Build();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+
+    // Đăng ký toàn bộ service của dự án
+    builder.Services.AddProjectServices(builder.Configuration);
+
+
+
+
+
+
+
+    var app = builder.Build();
+
+    app.UseMiddleware<TraceIdMiddleware>();      // 1. gán traceId trước
+    app.UseSerilogRequestLogging();              // 2. log request có TraceId
+    app.UseMiddleware<ExceptionHandlingMiddleware>(); // 3. bắt lỗi
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+
+
+    app.Run();
+}
+catch (Exception ex)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
 }
 
-app.UseHttpsRedirection();
 
-app.Run();
+
