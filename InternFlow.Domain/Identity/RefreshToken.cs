@@ -1,4 +1,4 @@
-namespace InternFlow.Domain.Entities;
+namespace InternFlow.Domain.Identity;
 
 public class RefreshToken
 {
@@ -15,12 +15,10 @@ public class RefreshToken
     public DateTime? RevokedAt { get; set; }
     public string? RevokedReason { get; set; }
 
-    // === Helper Properties (Không lưu trong DB) ===
     public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
-    public bool IsRevoked => RevokedAt != null;
+    public bool IsRevoked => RevokedAt is not null;
     public bool IsActive => !IsRevoked && !IsExpired;
 
-    // === Navigation Properties ===
     public User User { get; set; } = null!;
     public RefreshToken? ReplacedByToken { get; set; }
 }

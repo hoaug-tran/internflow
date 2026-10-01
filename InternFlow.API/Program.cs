@@ -1,11 +1,7 @@
 
+using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
 using Serilog;
-
-using InternFlow.Application.Common.Interfaces;
-using InternFlow.Infrastructure.Data;
-using InternFlow.Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
 
@@ -31,17 +27,8 @@ try
 
 
 
-    // 1. Cấu hình DbContext
-    builder.Services.AddDbContext<InternFlowDbContext>(options =>
-    {
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                               ?? "Server=localhost;Database=InternFlowDb;Trusted_Connection=True;TrustServerCertificate=True;";
-        options.UseSqlServer(connectionString);
-    });
-
-    // 2. Đăng ký các Service bàn giao cho team
-    builder.Services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
-    builder.Services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+    // Đăng ký toàn bộ service của dự án
+    builder.Services.AddProjectServices(builder.Configuration);
 
 
 

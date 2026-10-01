@@ -1,8 +1,5 @@
-namespace InternFlow.Domain.Entities.Views;
+namespace InternFlow.Infrastructure.Data.ReadModels;
 
-/// <summary>
-/// Entity biểu diễn Database View dbo.vw_CurrentMentorAssignments (Keyless Entity Type)
-/// </summary>
 public class CurrentMentorAssignmentView
 {
     public long AssignmentId { get; set; }

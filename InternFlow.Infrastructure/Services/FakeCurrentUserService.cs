@@ -1,5 +1,5 @@
 using InternFlow.Application.Common.Interfaces;
-using InternFlow.Domain.Constants;
+using InternFlow.Domain.Identity;
 
 namespace InternFlow.Infrastructure.Services;
 
@@ -11,11 +11,11 @@ public class FakeCurrentUserService : ICurrentUserService
     public string? Email => "mentor.demo@internflow.com";
 
     // Dùng hằng số chuỗi UserRoles.Mentor thay vì Enum UserRole
-    public string? Role => UserRoles.Mentor;
+    public string? Role => UserRole.Mentor.ToString();
 
     public bool IsAuthenticated => true;
 
     // So sánh chuỗi không phân biệt hoa thường
     public bool IsInRole(string role) =>
-        string.Equals(role, UserRoles.Mentor, StringComparison.OrdinalIgnoreCase);
+        string.Equals(role, UserRole.Mentor.ToString(), StringComparison.OrdinalIgnoreCase);
 }

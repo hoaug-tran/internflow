@@ -1,6 +1,4 @@
-using InternFlow.Domain.Enums;
-
-namespace InternFlow.Domain.Entities;
+namespace InternFlow.Domain.Identity;
 
 public class MentorProfile
 {
@@ -14,6 +12,5 @@ public class MentorProfile
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
-    // Navigation trỏ ngược lại User
     public User User { get; set; } = null!;
 }

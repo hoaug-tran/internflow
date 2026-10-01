@@ -1,5 +1,5 @@
-using InternFlow.Domain.Entities;
-using InternFlow.Domain.Enums;
+using InternFlow.Domain.Identity;
+using InternFlow.Domain.Internships;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,8 +16,10 @@ public class BatchMentorConfiguration : IEntityTypeConfiguration<BatchMentor>
         });
 
         // 2. Khóa chính ghép (Composite Primary Key)
-        builder.HasKey(bm => new { bm.BatchId, bm.MentorId })
+        builder.HasKey(bm => new { bm.InternshipId, bm.MentorId })
                .HasName("PK_BatchMentors");
+
+        builder.Property(bm => bm.InternshipId).HasColumnName("BatchId");
 
         // 3. Cấu hình cột MentorRole
         builder.Property(bm => bm.MentorRole)
@@ -38,9 +40,9 @@ public class BatchMentorConfiguration : IEntityTypeConfiguration<BatchMentor>
 
         // 5. Khóa ngoại
         // Tham chiếu Batch
-        builder.HasOne(bm => bm.Batch)
+        builder.HasOne(bm => bm.Internship)
                .WithMany(b => b.BatchMentors)
-               .HasForeignKey(bm => bm.BatchId)
+               .HasForeignKey(bm => bm.InternshipId)
                .HasConstraintName("FK_BM_Batch")
                .OnDelete(DeleteBehavior.Cascade);
 

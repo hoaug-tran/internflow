@@ -1,4 +1,4 @@
-using InternFlow.Domain.Entities.Views;
+using InternFlow.Infrastructure.Data.ReadModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

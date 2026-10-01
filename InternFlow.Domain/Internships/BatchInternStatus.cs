@@ -1,4 +1,4 @@
-namespace InternFlow.Domain.Enums;
+namespace InternFlow.Domain.Internships;
 
 public enum BatchInternStatus
 {

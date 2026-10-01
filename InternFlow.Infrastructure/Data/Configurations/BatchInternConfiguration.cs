@@ -1,5 +1,5 @@
-using InternFlow.Domain.Entities;
-using InternFlow.Domain.Enums;
+using InternFlow.Domain.Identity;
+using InternFlow.Domain.Internships;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,8 +17,10 @@ public class BatchInternConfiguration : IEntityTypeConfiguration<BatchIntern>
         });
 
         // 2. Khóa chính ghép (Composite Primary Key)
-        builder.HasKey(bi => new { bi.BatchId, bi.InternId })
+        builder.HasKey(bi => new { bi.InternshipId, bi.InternId })
                .HasName("PK_BatchInterns");
+
+        builder.Property(bi => bi.InternshipId).HasColumnName("BatchId");
 
         // 3. Cấu hình các thuộc tính
         builder.Property(bi => bi.InternRole)
@@ -48,14 +50,14 @@ public class BatchInternConfiguration : IEntityTypeConfiguration<BatchIntern>
         builder.HasIndex(bi => bi.InternId)
                .HasDatabaseName("IX_BI_Intern");
 
-        builder.HasIndex(bi => new { bi.BatchId, bi.Status })
+        builder.HasIndex(bi => new { bi.InternshipId, bi.Status })
                .HasDatabaseName("IX_BI_Status");
 
         // 5. Khóa ngoại
         // Tham chiếu Batch
-        builder.HasOne(bi => bi.Batch)
+        builder.HasOne(bi => bi.Internship)
                .WithMany(b => b.BatchInterns)
-               .HasForeignKey(bi => bi.BatchId)
+               .HasForeignKey(bi => bi.InternshipId)
                .HasConstraintName("FK_BI_Batch")
                .OnDelete(DeleteBehavior.Cascade);
 

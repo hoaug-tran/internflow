@@ -26,7 +26,7 @@ public class InternshipQueryService : IInternshipQueryService
             .AsNoTracking()
             .AnyAsync(ma => ma.MentorId == mentorId
                          && ma.InternId == internId
-                         && ma.BatchId == batchId
+                         && ma.InternshipId == batchId
                          && ma.EndedAt == null, ct);
     }
 
@@ -41,6 +41,6 @@ public class InternshipQueryService : IInternshipQueryService
         return await _context.BatchInterns
             .AsNoTracking()
             .AnyAsync(bi => bi.InternId == internId
-                         && bi.BatchId == batchId, ct);
+                         && bi.InternshipId == batchId, ct);
     }
 }

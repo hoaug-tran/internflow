@@ -1,4 +1,4 @@
-using InternFlow.Domain.Entities;
+using InternFlow.Domain.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
