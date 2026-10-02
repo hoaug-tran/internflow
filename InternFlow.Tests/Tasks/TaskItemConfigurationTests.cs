@@ -23,9 +23,10 @@ public class TaskItemConfigurationTests : IDisposable
             .Options;
         _db = new InternFlowDbContext(options);
 
-
         _designTimeModel = _db.GetService<IDesignTimeModel>().Model;
     }
+
+
 
     [Fact]
     public void TaskStatus_Enum_Has_InReview_Not_Review()
@@ -40,6 +41,7 @@ public class TaskItemConfigurationTests : IDisposable
         Enum.GetNames<TaskPriority>().Should().BeEquivalentTo(
             new[] { "Low", "Medium", "High", "Critical" });
     }
+
 
     [Fact]
     public void Task_Status_Is_Configured()
