@@ -113,7 +113,7 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasIndex("InternId");
 
-                    b.HasIndex("EvaluationPeriodId", "InternId")
+                    b.HasIndex("EvaluationPeriodId", "InternId", "EvaluatorId")
                         .IsUnique();
 
                     b.ToTable("Evaluations", "dbo");
@@ -736,6 +736,12 @@ namespace InternFlow.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<DateOnly?>("StartDate")
                         .HasColumnType("date");
 
@@ -755,9 +761,13 @@ namespace InternFlow.Infrastructure.Migrations
                     b.HasIndex("InternshipId", "Name")
                         .IsUnique();
 
+                    b.HasIndex("InternshipId", "Status");
+
                     b.ToTable("Projects", "dbo", t =>
                         {
                             t.HasCheckConstraint("CK_Projects_Dates", "[EndDate] IS NULL OR [StartDate] IS NULL OR [EndDate] >= [StartDate]");
+
+                            t.HasCheckConstraint("CK_Projects_Status", "[Status] IN ('Planned','Active','OnHold','Completed','Cancelled')");
                         });
                 });
 
@@ -774,6 +784,9 @@ namespace InternFlow.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
 
+                    b.Property<DateTime?>("RemovedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -783,6 +796,11 @@ namespace InternFlow.Infrastructure.Migrations
                     b.HasKey("ProjectId", "UserId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("ProjectId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ProjectMembers_Project_User_Active")
+                        .HasFilter("[RemovedAt] IS NULL");
 
                     b.ToTable("ProjectMembers", "dbo");
                 });
@@ -805,6 +823,9 @@ namespace InternFlow.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
 
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
@@ -820,6 +841,12 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -839,9 +866,22 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasIndex("AssigneeId");
 
+                    b.HasIndex("CreatedBy");
+
                     b.HasIndex("ProjectId", "Status");
 
-                    b.ToTable("Tasks", "dbo");
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("ProjectId", "Status"), new[] { "AssigneeId", "Priority", "DueDate" });
+
+                    b.ToTable("Tasks", "dbo", t =>
+                        {
+                            t.HasCheckConstraint("CK_Tasks_CompletedAt", "([Status] = 'Done' AND [CompletedAt] IS NOT NULL) OR ([Status] <> 'Done' AND [CompletedAt] IS NULL)");
+
+                            t.HasCheckConstraint("CK_Tasks_Priority", "[Priority] IN ('Low','Medium','High','Critical')");
+
+                            t.HasCheckConstraint("CK_Tasks_Status", "[Status] IN ('Todo','InProgress','InReview','Done','Cancelled')");
+
+                            t.HasCheckConstraint("CK_Tasks_Title", "LEN(LTRIM(RTRIM([Title]))) > 0");
+                        });
                 });
 
             modelBuilder.Entity("InternFlow.Domain.Projects.WorkLog", b =>
@@ -856,6 +896,12 @@ namespace InternFlow.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
 
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
@@ -863,6 +909,12 @@ namespace InternFlow.Infrastructure.Migrations
                     b.Property<decimal>("Hours")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<Guid>("TaskItemId")
                         .HasColumnType("uniqueidentifier");
@@ -878,12 +930,17 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("TaskItemId");
 
-                    b.HasIndex("TaskItemId", "WorkDate");
+                    b.HasIndex("UserId", "WorkDate")
+                        .HasFilter("[DeletedAt] IS NULL");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("UserId", "WorkDate"), new[] { "TaskItemId", "Hours" });
 
                     b.ToTable("WorkLogs", "dbo", t =>
                         {
+                            t.HasCheckConstraint("CK_WorkLogs_Description", "LEN(LTRIM(RTRIM([Description]))) > 0");
+
                             t.HasCheckConstraint("CK_WorkLogs_Hours", "[Hours] > 0 AND [Hours] <= 24");
                         });
                 });
@@ -1152,7 +1209,7 @@ namespace InternFlow.Infrastructure.Migrations
                     b.HasOne("InternFlow.Domain.Internships.Internship", "Internship")
                         .WithMany("Projects")
                         .HasForeignKey("InternshipId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Creator");
@@ -1186,6 +1243,12 @@ namespace InternFlow.Infrastructure.Migrations
                         .HasForeignKey("AssigneeId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("InternFlow.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("InternFlow.Domain.Projects.Project", "Project")
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
@@ -1202,7 +1265,7 @@ namespace InternFlow.Infrastructure.Migrations
                     b.HasOne("InternFlow.Domain.Projects.TaskItem", "TaskItem")
                         .WithMany("WorkLogs")
                         .HasForeignKey("TaskItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("InternFlow.Domain.Identity.User", "User")
