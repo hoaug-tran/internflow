@@ -16,7 +16,7 @@ public class EvaluationConfiguration : IEntityTypeConfiguration<Evaluation>
         builder.Property(e => e.SubmittedAt).HasColumnType("datetime2");
         builder.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSUTCDATETIME()");
         builder.Property(e => e.UpdatedAt).HasColumnType("datetime2");
-        builder.HasIndex(e => new { e.EvaluationPeriodId, e.InternId, e.EvaluatorId }).IsUnique();
+        builder.HasIndex(e => new { e.EvaluationPeriodId, e.InternId }).IsUnique();
         builder.HasOne(e => e.EvaluationPeriod).WithMany(p => p.Evaluations).HasForeignKey(e => e.EvaluationPeriodId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(e => e.Intern).WithMany(u => u.EvaluationsReceived).HasForeignKey(e => e.InternId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(e => e.Evaluator).WithMany(u => u.EvaluationsGiven).HasForeignKey(e => e.EvaluatorId).OnDelete(DeleteBehavior.Restrict);

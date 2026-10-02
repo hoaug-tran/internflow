@@ -68,58 +68,6 @@ namespace InternFlow.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_Criteria_Weight", "[Weight] > 0 AND [Weight] <= 100");
                         });
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000001"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 42, 7, 797, DateTimeKind.Utc).AddTicks(3914),
-                            DisplayOrder = 1,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Thái độ làm việc và kỷ luật",
-                            Weight = 0.2m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000002"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 42, 7, 797, DateTimeKind.Utc).AddTicks(3914),
-                            DisplayOrder = 2,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Kỹ năng lập trình",
-                            Weight = 0.3m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000003"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 42, 7, 797, DateTimeKind.Utc).AddTicks(3914),
-                            DisplayOrder = 3,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Khả năng làm việc nhóm",
-                            Weight = 0.2m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000004"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 42, 7, 797, DateTimeKind.Utc).AddTicks(3914),
-                            DisplayOrder = 4,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Tiến độ hoàn thành Task",
-                            Weight = 0.2m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000005"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 42, 7, 797, DateTimeKind.Utc).AddTicks(3914),
-                            DisplayOrder = 5,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Khả năng chủ động học hỏi",
-                            Weight = 0.1m
-                        });
                 });
 
             modelBuilder.Entity("InternFlow.Domain.Evaluations.Evaluation", b =>
@@ -165,7 +113,7 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasIndex("InternId");
 
-                    b.HasIndex("EvaluationPeriodId", "InternId", "EvaluatorId")
+                    b.HasIndex("EvaluationPeriodId", "InternId")
                         .IsUnique();
 
                     b.ToTable("Evaluations", "dbo");
