@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace InternFlow.API.Extensions;
 
 /// <summary>
-/// Extension method đăng ký toàn bộ service của dự án theo phong cách tập trung tại tầng API.
+/// Extension method đăng ký toàn bộ service của dự án.
 /// Trong Program.cs chỉ cần gọi: builder.Services.AddProjectServices(builder.Configuration)
 /// </summary>
 public static class DependencyInjection
@@ -19,7 +19,7 @@ public static class DependencyInjection
         services.AddDbContext<InternFlowDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection")
-                                   ?? "Server=localhost,1433;Database=InternFlowDb;User Id=sa;Password=Your_Strong_Password123!;TrustServerCertificate=True;";
+                ?? "Server=localhost;Database=InternFlowDb;Trusted_Connection=True;TrustServerCertificate=True;";
             options.UseSqlServer(connectionString);
         });
 
@@ -36,6 +36,10 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+
+        // ─── 4. Health Checks ───────────────────────────────────────────────────
+        services.AddHealthChecks()
+            .AddDbContextCheck<InternFlowDbContext>("database", tags: new[] { "ready" });
 
         return services;
     }

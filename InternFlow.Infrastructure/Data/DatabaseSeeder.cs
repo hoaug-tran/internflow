@@ -1,5 +1,5 @@
-using InternFlow.Domain.Entities;
-using InternFlow.Domain.Enums;
+using InternFlow.Domain.Identity;
+using InternFlow.Domain.Internships;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.Infrastructure.Data;
@@ -89,7 +89,7 @@ public static class DatabaseSeeder
             Name = "Đợt Thực Tập Mùa Thu 2026",
             StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-15)),
             EndDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(75)),
-            Status = BatchStatus.Active,
+            Status = InternshipStatus.Active,
             CreatedBy = adminId,
             CreatedAt = DateTime.UtcNow
         };
@@ -99,7 +99,7 @@ public static class DatabaseSeeder
         // 6. Gán Mentor và Intern vào đợt thực tập
         var batchMentor = new BatchMentor
         {
-            BatchId = batchId,
+            InternshipId = batchId,
             MentorId = mentorId,
             MentorRole = UserRole.Mentor,
             AddedBy = adminId,
@@ -108,7 +108,7 @@ public static class DatabaseSeeder
 
         var batchIntern = new BatchIntern
         {
-            BatchId = batchId,
+            InternshipId = batchId,
             InternId = internId,
             InternRole = UserRole.Intern,
             Status = BatchInternStatus.InProgress,
@@ -122,7 +122,7 @@ public static class DatabaseSeeder
         // 7. Phân công Mentor hướng dẫn Intern
         var assignment = new MentorAssignment
         {
-            BatchId = batchId,
+            InternshipId = batchId,
             InternId = internId,
             MentorId = mentorId,
             AssignedBy = adminId,

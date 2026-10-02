@@ -1,4 +1,4 @@
-using InternFlow.Domain.Entities;
+using InternFlow.Domain.Internships;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,6 +21,8 @@ public class MentorAssignmentConfiguration : IEntityTypeConfiguration<MentorAssi
         builder.Property(ma => ma.Id)
                .UseIdentityColumn();
 
+        builder.Property(ma => ma.InternshipId).HasColumnName("BatchId");
+
         // 3. Cấu hình các thuộc tính
         builder.Property(ma => ma.AssignedAt)
                .HasColumnType("datetime2")
@@ -41,19 +43,19 @@ public class MentorAssignmentConfiguration : IEntityTypeConfiguration<MentorAssi
 
         // 4. Các Chỉ mục (Indexes)
         // Đảm bảo mỗi Intern chỉ có duy nhất 1 Mentor hiện tại trong 1 đợt thực tập
-        builder.HasIndex(ma => new { ma.BatchId, ma.InternId })
+        builder.HasIndex(ma => new { ma.InternshipId, ma.InternId })
                .IsUnique()
                .HasFilter("[EndedAt] IS NULL")
                .HasDatabaseName("UX_MA_OneCurrentMentor");
 
         // Kiểm tra phân quyền nhanh: "Mentor này hiện đang hướng dẫn những Intern nào trong đợt?"
-        builder.HasIndex(ma => new { ma.MentorId, ma.BatchId })
+        builder.HasIndex(ma => new { ma.MentorId, ma.InternshipId })
                .IncludeProperties(ma => ma.InternId)
                .HasFilter("[EndedAt] IS NULL")
                .HasDatabaseName("IX_MA_CurrentByMentor");
 
         // Xem toàn bộ lịch sử phân công của Intern trong đợt (kể cả các mentor cũ)
-        builder.HasIndex(ma => new { ma.BatchId, ma.InternId, ma.AssignedAt })
+        builder.HasIndex(ma => new { ma.InternshipId, ma.InternId, ma.AssignedAt })
                .IsDescending(false, false, true)
                .HasDatabaseName("IX_MA_HistoryByIntern");
 
@@ -61,21 +63,21 @@ public class MentorAssignmentConfiguration : IEntityTypeConfiguration<MentorAssi
         // Ràng buộc Intern phải thuộc đợt thực tập này
         builder.HasOne(ma => ma.BatchIntern)
                .WithMany(bi => bi.MentorAssignments)
-               .HasForeignKey(ma => new { ma.BatchId, ma.InternId })
+               .HasForeignKey(ma => new { ma.InternshipId, ma.InternId })
                .HasConstraintName("FK_MA_BatchIntern")
                .OnDelete(DeleteBehavior.Restrict);
 
         // Ràng buộc Mentor phải thuộc đợt thực tập này
         builder.HasOne(ma => ma.BatchMentor)
                .WithMany(bm => bm.MentorAssignments)
-               .HasForeignKey(ma => new { ma.BatchId, ma.MentorId })
+               .HasForeignKey(ma => new { ma.InternshipId, ma.MentorId })
                .HasConstraintName("FK_MA_BatchMentor")
                .OnDelete(DeleteBehavior.Restrict);
 
-        // Tham chiếu Batch
-        builder.HasOne(ma => ma.Batch)
+        // Tham chiếu Batch (Internship)
+        builder.HasOne(ma => ma.Internship)
                .WithMany(b => b.MentorAssignments)
-               .HasForeignKey(ma => ma.BatchId)
+               .HasForeignKey(ma => ma.InternshipId)
                .OnDelete(DeleteBehavior.Restrict);
 
         // Tham chiếu người phân công

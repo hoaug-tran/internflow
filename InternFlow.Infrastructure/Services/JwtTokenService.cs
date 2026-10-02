@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using InternFlow.Application.Common.Interfaces;
-using InternFlow.Domain.Entities;
+using InternFlow.Domain.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 

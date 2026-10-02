@@ -18,4 +18,6 @@ csharp_indent_case_contents = true
 csharp_indent_switch_labels = true
 
 [*.{json,yml,yaml}]
-indent_size = 2
+indent_size = 
+[**/Migrations/*.cs]
+generated_code = true

@@ -1,5 +1,4 @@
-using InternFlow.Domain.Entities;
-using InternFlow.Domain.Enums;
+using InternFlow.Domain.Internships;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -46,7 +45,7 @@ public class InternshipConfiguration : IEntityTypeConfiguration<Internship>
                .HasConversion<string>()
                .HasMaxLength(20)
                .IsUnicode(false)
-               .HasDefaultValue(BatchStatus.Planned)
+               .HasDefaultValue(InternshipStatus.Planned)
                .IsRequired();
 
         builder.Property(i => i.CreatedAt)

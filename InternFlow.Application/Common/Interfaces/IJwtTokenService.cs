@@ -1,4 +1,4 @@
-using InternFlow.Domain.Entities;
+using InternFlow.Domain.Identity;
 
 namespace InternFlow.Application.Common.Interfaces;
 

@@ -1,10 +1,10 @@
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Auth.DTOs;
-using InternFlow.Domain.Entities;
+using InternFlow.Domain.Identity;
 using InternFlow.Shared.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using RefreshTokenEntity = InternFlow.Domain.Entities.RefreshToken;
+using RefreshTokenEntity = InternFlow.Domain.Identity.RefreshToken;
 
 namespace InternFlow.Application.Features.Auth.Commands.RefreshToken;
 
