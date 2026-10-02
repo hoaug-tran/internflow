@@ -12,4 +12,5 @@
   <Project Path="InternFlow.Domain/InternFlow.Domain.csproj" />
   <Project Path="InternFlow.Infrastructure/InternFlow.Infrastructure.csproj" />
   <Project Path="InternFlow.Shared/InternFlow.Shared.csproj" />
+  <Project Path="InternFlow.Tests/InternFlow.Tests.csproj" />
 </Solution>

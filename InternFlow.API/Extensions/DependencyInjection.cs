@@ -22,11 +22,12 @@ public static class DependencyInjection
                 ?? "Server=localhost;Database=InternFlowDb;Trusted_Connection=True;TrustServerCertificate=True;";
             options.UseSqlServer(connectionString);
         });
-
         // ─── Application Services ────────────────────────────────────────────
         services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
-
+        // ─── Health Checks ───────────────────────────────────────────────────
+        services.AddHealthChecks()
+            .AddDbContextCheck<InternFlowDbContext>("database", tags: new[] { "ready" });
         return services;
     }
 }
