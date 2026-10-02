@@ -3,6 +3,8 @@ using InternFlow.Domain.Identity;
 using InternFlow.Domain.Projects;
 using InternFlow.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Xunit;
 
 using TaskStatus = InternFlow.Domain.Projects.TaskStatus;
@@ -12,20 +14,22 @@ namespace InternFlow.Tests.Tasks;
 public class TaskItemConfigurationTests : IDisposable
 {
     private readonly InternFlowDbContext _db;
+    private readonly IModel _designTimeModel;
 
     public TaskItemConfigurationTests()
     {
-
         var options = new DbContextOptionsBuilder<InternFlowDbContext>()
             .UseInMemoryDatabase(databaseName: $"TaskItemTest_{Guid.NewGuid()}")
             .Options;
         _db = new InternFlowDbContext(options);
+
+
+        _designTimeModel = _db.GetService<IDesignTimeModel>().Model;
     }
 
     [Fact]
     public void TaskStatus_Enum_Has_InReview_Not_Review()
     {
-        // ✅ Dùng alias
         Enum.GetNames<TaskStatus>().Should().Contain("InReview");
         Enum.GetNames<TaskStatus>().Should().NotContain("Review");
     }
@@ -40,7 +44,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_Status_Is_Configured()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var statusProperty = entityType!.FindProperty(nameof(TaskItem.Status));
 
         statusProperty.Should().NotBeNull();
@@ -50,7 +54,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_Priority_Is_Configured()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var priorityProperty = entityType!.FindProperty(nameof(TaskItem.Priority));
 
         priorityProperty.Should().NotBeNull();
@@ -60,7 +64,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_AssigneeId_IsNullable()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var assigneeProperty = entityType!.FindProperty(nameof(TaskItem.AssigneeId));
 
         assigneeProperty.Should().NotBeNull();
@@ -70,7 +74,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_DueDate_IsNullable()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var dueDateProperty = entityType!.FindProperty(nameof(TaskItem.DueDate));
 
         dueDateProperty.Should().NotBeNull();
@@ -80,7 +84,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_RowVersion_IsConcurrencyToken()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var rvProperty = entityType!.FindProperty(nameof(TaskItem.RowVersion));
 
         rvProperty.Should().NotBeNull();
@@ -90,7 +94,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_CreatedBy_Has_Fk_To_Users()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var fk = entityType!.GetForeignKeys()
             .FirstOrDefault(f => f.Properties.Any(p => p.Name == nameof(TaskItem.CreatedBy)));
 
@@ -99,10 +103,11 @@ public class TaskItemConfigurationTests : IDisposable
         fk.DeleteBehavior.Should().Be(DeleteBehavior.Restrict);
     }
 
+
     [Fact]
     public void Task_Has_CheckConstraint_On_Status()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var checks = entityType!.GetCheckConstraints();
 
         checks.Should().Contain(c => c.Name == "CK_Tasks_Status");
@@ -111,7 +116,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_Has_CheckConstraint_On_Priority()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var checks = entityType!.GetCheckConstraints();
 
         checks.Should().Contain(c => c.Name == "CK_Tasks_Priority");
@@ -120,7 +125,7 @@ public class TaskItemConfigurationTests : IDisposable
     [Fact]
     public void Task_Has_CheckConstraint_On_CompletedAt()
     {
-        var entityType = _db.Model.FindEntityType(typeof(TaskItem));
+        var entityType = _designTimeModel.FindEntityType(typeof(TaskItem));
         var checks = entityType!.GetCheckConstraints();
 
         checks.Should().Contain(c => c.Name == "CK_Tasks_CompletedAt");
