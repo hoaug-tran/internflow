@@ -74,7 +74,7 @@ public class MentorAssignmentConfiguration : IEntityTypeConfiguration<MentorAssi
                .HasConstraintName("FK_MA_BatchMentor")
                .OnDelete(DeleteBehavior.Restrict);
 
-        // Tham chiếu Batch
+        // Tham chiếu Batch (Internship)
         builder.HasOne(ma => ma.Internship)
                .WithMany(b => b.MentorAssignments)
                .HasForeignKey(ma => ma.InternshipId)
