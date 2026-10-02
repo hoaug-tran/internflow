@@ -2,6 +2,8 @@ using FluentAssertions;
 using InternFlow.Domain.Projects;
 using InternFlow.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Xunit;
 
 namespace InternFlow.Tests.WorkLogs;
@@ -9,6 +11,7 @@ namespace InternFlow.Tests.WorkLogs;
 public class WorkLogConfigurationTests : IDisposable
 {
     private readonly InternFlowDbContext _db;
+    private readonly IModel _designTimeModel;
 
     public WorkLogConfigurationTests()
     {
@@ -16,12 +19,14 @@ public class WorkLogConfigurationTests : IDisposable
             .UseInMemoryDatabase(databaseName: $"WorkLogTest_{Guid.NewGuid()}")
             .Options;
         _db = new InternFlowDbContext(options);
+
+        _designTimeModel = _db.GetService<IDesignTimeModel>().Model;
     }
 
     [Fact]
     public void WorkLog_Has_Renamed_Properties()
     {
-        var entityType = _db.Model.FindEntityType(typeof(WorkLog));
+        var entityType = _designTimeModel.FindEntityType(typeof(WorkLog));
 
         entityType!.FindProperty(nameof(WorkLog.TaskItemId)).Should().NotBeNull();
         entityType.FindProperty(nameof(WorkLog.UserId)).Should().NotBeNull();
@@ -32,7 +37,7 @@ public class WorkLogConfigurationTests : IDisposable
     [Fact]
     public void WorkLog_DeletedAt_IsNullable()
     {
-        var entityType = _db.Model.FindEntityType(typeof(WorkLog));
+        var entityType = _designTimeModel.FindEntityType(typeof(WorkLog));
         var deletedAtProperty = entityType!.FindProperty(nameof(WorkLog.DeletedAt));
 
         deletedAtProperty.Should().NotBeNull();
@@ -42,7 +47,7 @@ public class WorkLogConfigurationTests : IDisposable
     [Fact]
     public void WorkLog_RowVersion_IsConcurrencyToken()
     {
-        var entityType = _db.Model.FindEntityType(typeof(WorkLog));
+        var entityType = _designTimeModel.FindEntityType(typeof(WorkLog));
         var rvProperty = entityType!.FindProperty(nameof(WorkLog.RowVersion));
 
         rvProperty.Should().NotBeNull();
@@ -52,7 +57,7 @@ public class WorkLogConfigurationTests : IDisposable
     [Fact]
     public void WorkLog_Has_Unique_Filtered_Index()
     {
-        var entityType = _db.Model.FindEntityType(typeof(WorkLog));
+        var entityType = _designTimeModel.FindEntityType(typeof(WorkLog));
         var index = entityType!.GetIndexes()
             .FirstOrDefault(i => i.GetDatabaseName() == "UX_WorkLogs_Task_User_Date_Active");
 
@@ -64,7 +69,7 @@ public class WorkLogConfigurationTests : IDisposable
     [Fact]
     public void WorkLog_Has_CheckConstraint_On_Hours()
     {
-        var entityType = _db.Model.FindEntityType(typeof(WorkLog));
+        var entityType = _designTimeModel.FindEntityType(typeof(WorkLog));
         var checks = entityType!.GetCheckConstraints();
 
         checks.Should().Contain(c => c.Name == "CK_WorkLogs_Hours");
@@ -73,7 +78,7 @@ public class WorkLogConfigurationTests : IDisposable
     [Fact]
     public void WorkLog_Fk_To_TaskItem_Is_Restrict()
     {
-        var entityType = _db.Model.FindEntityType(typeof(WorkLog));
+        var entityType = _designTimeModel.FindEntityType(typeof(WorkLog));
         var fk = entityType!.GetForeignKeys()
             .FirstOrDefault(f => f.PrincipalEntityType.ClrType == typeof(TaskItem));
 
