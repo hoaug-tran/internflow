@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace InternFlow.API.Extensions;
 
 public static class HttpContextExtensions
@@ -21,5 +23,18 @@ public static class HttpContextExtensions
     public static string GetUserAgent(this HttpContext context)
     {
         return context.Request.Headers.UserAgent.ToString();
+    }
+
+    public static Guid? GetUserId(this ClaimsPrincipal principal)
+    {
+        var idClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                      ?? principal.FindFirst("sub")?.Value;
+
+        if (Guid.TryParse(idClaim, out var userId))
+        {
+            return userId;
+        }
+
+        return null;
     }
 }
