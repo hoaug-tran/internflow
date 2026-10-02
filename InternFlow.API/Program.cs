@@ -51,7 +51,7 @@ try
     {
         app.UseSwagger();
         app.UseSwaggerUI();
-
+        await app.MigrateAndSeedAsync();
     }
 
     app.UseHttpsRedirection();
