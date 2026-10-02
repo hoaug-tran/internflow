@@ -26,6 +26,9 @@ public static class DependencyInjection
         // ─── Application Services ────────────────────────────────────────────
         services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+        // ─── Health Checks ───────────────────────────────────────────────────
+        services.AddHealthChecks()
+            .AddDbContextCheck<InternFlowDbContext>("database", tags: new[] { "ready" });
 
         return services;
     }
