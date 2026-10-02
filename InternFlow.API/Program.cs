@@ -3,7 +3,6 @@ using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
 using InternFlow.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using InternFlow.Infrastructure.Data;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 
