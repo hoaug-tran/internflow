@@ -113,7 +113,7 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasIndex("InternId");
 
-                    b.HasIndex("EvaluationPeriodId", "InternId", "EvaluatorId")
+                    b.HasIndex("EvaluationPeriodId", "InternId")
                         .IsUnique();
 
                     b.ToTable("Evaluations", "dbo");

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InternFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(InternFlowDbContext))]
-    [Migration("20261001092019_SeedEvaluationData")]
-    partial class SeedEvaluationData
+    [Migration("20261002063529_FixEvaluationUniqueIndex")]
+    partial class FixEvaluationUniqueIndex
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,58 +71,6 @@ namespace InternFlow.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_Criteria_Weight", "[Weight] > 0 AND [Weight] <= 100");
                         });
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000001"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            DisplayOrder = 1,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Thái độ làm việc và kỷ luật",
-                            Weight = 0.2m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000002"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            DisplayOrder = 2,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Kỹ năng lập trình",
-                            Weight = 0.3m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000003"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            DisplayOrder = 3,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Khả năng làm việc nhóm",
-                            Weight = 0.2m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000004"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            DisplayOrder = 4,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Tiến độ hoàn thành Task",
-                            Weight = 0.2m
-                        },
-                        new
-                        {
-                            Id = new Guid("c1111111-1111-1111-1111-000000000005"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            DisplayOrder = 5,
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            IsActive = true,
-                            Name = "Khả năng chủ động học hỏi",
-                            Weight = 0.1m
-                        });
                 });
 
             modelBuilder.Entity("InternFlow.Domain.Evaluations.Evaluation", b =>
@@ -168,70 +116,10 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasIndex("InternId");
 
-                    b.HasIndex("EvaluationPeriodId", "InternId", "EvaluatorId")
+                    b.HasIndex("EvaluationPeriodId", "InternId")
                         .IsUnique();
 
                     b.ToTable("Evaluations", "dbo");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("a1111111-1111-1111-1111-000000000001"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            EvaluatorId = new Guid("22222222-0000-0000-0000-000000000000"),
-                            InternId = new Guid("33333333-0000-0000-0000-000000000001"),
-                            OverallComment = "Làm việc tốt, cần phát huy",
-                            Status = "Finalized",
-                            SubmittedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            UpdatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402)
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-1111-1111-1111-000000000002"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            EvaluatorId = new Guid("22222222-0000-0000-0000-000000000000"),
-                            InternId = new Guid("33333333-0000-0000-0000-000000000002"),
-                            OverallComment = "Đang trong quá trình chấm",
-                            Status = "Draft",
-                            UpdatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402)
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-1111-1111-1111-000000000003"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            EvaluatorId = new Guid("22222222-0000-0000-0000-000000000000"),
-                            InternId = new Guid("33333333-0000-0000-0000-000000000003"),
-                            OverallComment = "Kỹ năng xuất sắc",
-                            Status = "Finalized",
-                            SubmittedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            UpdatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402)
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-1111-1111-1111-000000000004"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            EvaluatorId = new Guid("22222222-0000-0000-0000-000000000000"),
-                            InternId = new Guid("33333333-0000-0000-0000-000000000004"),
-                            OverallComment = "Thường xuyên trễ deadline",
-                            Status = "Draft",
-                            UpdatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402)
-                        },
-                        new
-                        {
-                            Id = new Guid("a1111111-1111-1111-1111-000000000005"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EvaluationPeriodId = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            EvaluatorId = new Guid("22222222-0000-0000-0000-000000000000"),
-                            InternId = new Guid("33333333-0000-0000-0000-000000000005"),
-                            OverallComment = "Cần cải thiện giao tiếp",
-                            Status = "Finalized",
-                            SubmittedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            UpdatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402)
-                        });
                 });
 
             modelBuilder.Entity("InternFlow.Domain.Evaluations.EvaluationDetail", b =>
@@ -265,48 +153,6 @@ namespace InternFlow.Infrastructure.Migrations
                     b.ToTable("EvaluationDetails", "dbo", t =>
                         {
                             t.HasCheckConstraint("CK_EvaluationDetails_Score", "[Score] >= 0 AND [Score] <= 10");
-                        });
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("d1111111-1111-1111-1111-000000000001"),
-                            Comment = "Luôn đúng giờ",
-                            CriterionId = new Guid("c1111111-1111-1111-1111-000000000001"),
-                            EvaluationId = new Guid("a1111111-1111-1111-1111-000000000001"),
-                            Score = 9.0m
-                        },
-                        new
-                        {
-                            Id = new Guid("d1111111-1111-1111-1111-000000000002"),
-                            Comment = "Code sạch, tối ưu tốt",
-                            CriterionId = new Guid("c1111111-1111-1111-1111-000000000002"),
-                            EvaluationId = new Guid("a1111111-1111-1111-1111-000000000001"),
-                            Score = 8.0m
-                        },
-                        new
-                        {
-                            Id = new Guid("d1111111-1111-1111-1111-000000000003"),
-                            Comment = "Hỗ trợ đồng đội tốt",
-                            CriterionId = new Guid("c1111111-1111-1111-1111-000000000003"),
-                            EvaluationId = new Guid("a1111111-1111-1111-1111-000000000001"),
-                            Score = 8.5m
-                        },
-                        new
-                        {
-                            Id = new Guid("d1111111-1111-1111-1111-000000000004"),
-                            Comment = "Hoàn thành trước hạn",
-                            CriterionId = new Guid("c1111111-1111-1111-1111-000000000004"),
-                            EvaluationId = new Guid("a1111111-1111-1111-1111-000000000001"),
-                            Score = 9.0m
-                        },
-                        new
-                        {
-                            Id = new Guid("d1111111-1111-1111-1111-000000000005"),
-                            Comment = "Nên chủ động hỏi mentor nhiều hơn",
-                            CriterionId = new Guid("c1111111-1111-1111-1111-000000000005"),
-                            EvaluationId = new Guid("a1111111-1111-1111-1111-000000000001"),
-                            Score = 7.5m
                         });
                 });
 
@@ -357,58 +203,6 @@ namespace InternFlow.Infrastructure.Migrations
                     b.ToTable("EvaluationPeriods", "dbo", t =>
                         {
                             t.HasCheckConstraint("CK_EvaluationPeriods_Dates", "[EndDate] >= [StartDate]");
-                        });
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("e1111111-1111-1111-1111-000000000001"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EndDate = new DateOnly(2026, 9, 11),
-                            InternshipId = new Guid("11111111-0000-0000-0000-000000000000"),
-                            Name = "Đánh giá tháng 1",
-                            StartDate = new DateOnly(2026, 9, 1),
-                            Status = "Closed"
-                        },
-                        new
-                        {
-                            Id = new Guid("e1111111-1111-1111-1111-000000000002"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EndDate = new DateOnly(2026, 9, 26),
-                            InternshipId = new Guid("11111111-0000-0000-0000-000000000000"),
-                            Name = "Đánh giá tháng 2",
-                            StartDate = new DateOnly(2026, 9, 16),
-                            Status = "Closed"
-                        },
-                        new
-                        {
-                            Id = new Guid("e1111111-1111-1111-1111-000000000003"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EndDate = new DateOnly(2026, 10, 11),
-                            InternshipId = new Guid("11111111-0000-0000-0000-000000000000"),
-                            Name = "Đánh giá giữa kỳ",
-                            StartDate = new DateOnly(2026, 10, 1),
-                            Status = "Open"
-                        },
-                        new
-                        {
-                            Id = new Guid("e1111111-1111-1111-1111-000000000004"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EndDate = new DateOnly(2026, 10, 31),
-                            InternshipId = new Guid("11111111-0000-0000-0000-000000000000"),
-                            Name = "Đánh giá tháng 4",
-                            StartDate = new DateOnly(2026, 10, 21),
-                            Status = "Open"
-                        },
-                        new
-                        {
-                            Id = new Guid("e1111111-1111-1111-1111-000000000005"),
-                            CreatedAt = new DateTime(2026, 10, 1, 9, 20, 19, 80, DateTimeKind.Utc).AddTicks(2402),
-                            EndDate = new DateOnly(2026, 11, 20),
-                            InternshipId = new Guid("11111111-0000-0000-0000-000000000000"),
-                            Name = "Đánh giá cuối kỳ",
-                            StartDate = new DateOnly(2026, 11, 10),
-                            Status = "Open"
                         });
                 });
 
