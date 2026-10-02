@@ -1,10 +1,11 @@
+using InternFlow.Application.Common.Interfaces;
 using InternFlow.Domain.Entities;
 using InternFlow.Domain.Entities.Views;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.Infrastructure.Data;
 
-public class InternFlowDbContext : DbContext
+public class InternFlowDbContext : DbContext, IInternFlowDbContext
 {
     public InternFlowDbContext(DbContextOptions<InternFlowDbContext> options) : base(options)
     {
