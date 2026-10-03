@@ -13,6 +13,7 @@ public class Project : AuditableEntity
     public DateOnly? StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
     public Guid CreatedBy { get; set; }
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
     public Internship Internship { get; set; } = null!;
     public User Creator { get; set; } = null!;
