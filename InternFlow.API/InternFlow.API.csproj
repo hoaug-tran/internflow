@@ -17,12 +17,10 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"
       Version="8.0.12" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
-
     <ProjectReference Include="..\InternFlow.Application\InternFlow.Application.csproj" />
     <ProjectReference Include="..\InternFlow.Infrastructure\InternFlow.Infrastructure.csproj" />
   </ItemGroup>
