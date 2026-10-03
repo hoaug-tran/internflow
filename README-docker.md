@@ -29,12 +29,9 @@
    ```
    Cả 3 service (`api`, `sqlserver`, `redis`) phải ở trạng thái `healthy` (SQL Server/Redis) hoặc `running` (api).
 
-5. Áp migration (chạy 1 lần sau khi container đã lên):
-   ```bash
-   dotnet ef database update --project InternFlow.Infrastructure --startup-project InternFlow.API
-   ```
-   *(Cần cài `dotnet-ef` local: `dotnet tool install --global dotnet-ef` nếu chưa có. Lệnh này chạy trên máy host, kết nối tới SQL Server đang chạy trong container qua cổng 1433.)*
-
+5. Migration và dữ liệu mẫu: ở môi trường `Development`, API tự chạy migration và seed dữ liệu mẫu
+   (kỳ đánh giá demo + 5 tiêu chí) khi khởi động, không cần chạy `dotnet ef` tay.
+   Kiểm tra DB đã sẵn sàng: http://localhost:8080/health/ready (phải trả `Healthy`).
 6. Truy cập Swagger: http://localhost:8080/swagger
 
 ## Dừng và dọn dẹp
@@ -56,3 +53,4 @@ docker compose down -v       # dừng và xóa luôn volume DB (reset sạch)
 - `.env` đã có trong `.gitignore`, không được commit.
 - Đổi port trong `docker-compose.yml` nếu máy bạn đã dùng cổng 8080/1433/6379.
 - Nếu `sqlserver` không lên `healthy`, xem log: `docker compose logs sqlserver`.
+- Sau khi pull code có migration mới hoặc đổi cách seed, chạy `docker compose down -v` rồi `docker compose up -d --build` để DB khớp lại.
