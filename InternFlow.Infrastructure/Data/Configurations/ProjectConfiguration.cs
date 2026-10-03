@@ -11,6 +11,8 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.ToTable("Projects", "dbo", t =>
         {
             t.HasCheckConstraint("CK_Projects_Dates", "[EndDate] IS NULL OR [StartDate] IS NULL OR [EndDate] >= [StartDate]");
+            t.HasCheckConstraint("CK_Projects_Status",
+                "[Status] IN ('Planned','Active','OnHold','Completed','Cancelled')");
         });
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id).HasDefaultValueSql("NEWID()").ValueGeneratedOnAdd();
@@ -21,8 +23,11 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(p => p.EndDate).HasColumnType("date");
         builder.Property(p => p.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSUTCDATETIME()");
         builder.Property(p => p.UpdatedAt).HasColumnType("datetime2");
+        builder.Property(p => p.RowVersion).IsRowVersion();
+
         builder.HasIndex(p => new { p.InternshipId, p.Name }).IsUnique();
-        builder.HasOne(p => p.Internship).WithMany(i => i.Projects).HasForeignKey(p => p.InternshipId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasIndex(p => new { p.InternshipId, p.Status });
+        builder.HasOne(p => p.Internship).WithMany(i => i.Projects).HasForeignKey(p => p.InternshipId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(p => p.Creator).WithMany(u => u.CreatedProjects).HasForeignKey(p => p.CreatedBy).OnDelete(DeleteBehavior.Restrict);
     }
 }
