@@ -96,21 +96,6 @@ try
 
     var app = builder.Build();
 
-    // 3. Tự động Seed dữ liệu demo khi Database sẵn sàng
-    try
-    {
-        using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<InternFlowDbContext>();
-        if (await context.Database.CanConnectAsync())
-        {
-            await DatabaseSeeder.SeedAsync(context);
-        }
-    }
-    catch (Exception ex)
-    {
-        Log.Warning(ex, "[DatabaseSeeder] Thông báo: Chưa kết nối được Database để seed dữ liệu. Ứng dụng vẫn tiếp tục chạy.");
-    }
-
     // Pipeline Middlewares
     app.UseMiddleware<TraceIdMiddleware>();
     app.UseSerilogRequestLogging();
@@ -121,6 +106,7 @@ try
     {
         app.UseSwagger();
 
+
         app.UseSwaggerUI();
         await app.MigrateAndSeedAsync();
 
@@ -128,6 +114,8 @@ try
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
         });
+
+        await app.MigrateAndSeedAsync();
 
     }
 

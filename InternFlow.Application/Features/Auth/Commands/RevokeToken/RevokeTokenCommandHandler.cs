@@ -5,12 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.Application.Features.Auth.Commands.RevokeToken;
 
-public record RevokeTokenCommand(
-    string RefreshToken,
-    string? Reason = null,
-    string? IpAddress = null
-) : IRequest<ApiResponse<bool>>;
-
 public class RevokeTokenCommandHandler : IRequestHandler<RevokeTokenCommand, ApiResponse<bool>>
 {
     private readonly IInternFlowDbContext _context;

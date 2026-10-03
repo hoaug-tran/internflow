@@ -8,13 +8,6 @@ using RefreshTokenEntity = InternFlow.Domain.Identity.RefreshToken;
 
 namespace InternFlow.Application.Features.Auth.Commands.Login;
 
-public record LoginCommand(
-    string Email,
-    string Password,
-    string? IpAddress = null,
-    string? UserAgent = null
-) : IRequest<ApiResponse<AuthResponse>>;
-
 public class LoginCommandHandler : IRequestHandler<LoginCommand, ApiResponse<AuthResponse>>
 {
     private readonly IInternFlowDbContext _context;
