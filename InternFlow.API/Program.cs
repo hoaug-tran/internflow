@@ -1,21 +1,15 @@
-
+using System.Text;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
 using InternFlow.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using InternFlow.Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
-
-
-
-
 
 try
 {
@@ -26,39 +20,107 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext());
 
+    // Add services to the container.
+    builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
 
+    // Cấu hình Swagger với JWT Bearer Authorize
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "InternFlow API",
+            Version = "v1",
+            Description = "Hệ thống Quản lý Thực tập & Phân công Công việc"
+        });
 
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Nhập Access Token JWT theo định dạng: Bearer {token}"
+        });
 
-    // Đăng ký toàn bộ service của dự án
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+    });
+
+    // 1. Cấu hình DbContext, MediatR, HealthChecks và các Service dự án
     builder.Services.AddProjectServices(builder.Configuration);
 
+    // 2. Cấu hình JWT Authentication
+    var jwtSecret = builder.Configuration["Jwt:Secret"]
+                    ?? builder.Configuration["Jwt:Key"]
+                    ?? "InternFlow_Super_Secret_Jwt_Signing_Key_For_Identity_Auth_2026!";
+    var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "InternFlow";
+    var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "InternFlowClient";
 
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
-
-
-
+    builder.Services.AddAuthorization();
 
     var app = builder.Build();
 
-    app.UseMiddleware<TraceIdMiddleware>();      // 1. gán traceId trước
-    app.UseSerilogRequestLogging();              // 2. log request có TraceId
-    app.UseMiddleware<ExceptionHandlingMiddleware>(); // 3. bắt lỗi
+    // Pipeline Middlewares
+    app.UseMiddleware<TraceIdMiddleware>();
+    app.UseSerilogRequestLogging();
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
+        });
         await app.MigrateAndSeedAsync();
     }
 
     app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
     app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
     app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 
-
+    app.MapControllers();
 
     app.Run();
 }
@@ -70,7 +132,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 public partial class Program { }
-
-
-

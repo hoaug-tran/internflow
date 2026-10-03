@@ -39,7 +39,7 @@ public class BatchMentorConfiguration : IEntityTypeConfiguration<BatchMentor>
                .HasDatabaseName("IX_BM_Mentor");
 
         // 5. Khóa ngoại
-        // Tham chiếu Batch
+        // Tham chiếu Batch (Internship)
         builder.HasOne(bm => bm.Internship)
                .WithMany(b => b.BatchMentors)
                .HasForeignKey(bm => bm.InternshipId)

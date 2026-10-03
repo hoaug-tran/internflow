@@ -54,7 +54,7 @@ public class BatchInternConfiguration : IEntityTypeConfiguration<BatchIntern>
                .HasDatabaseName("IX_BI_Status");
 
         // 5. Khóa ngoại
-        // Tham chiếu Batch
+        // Tham chiếu Batch (Internship)
         builder.HasOne(bi => bi.Internship)
                .WithMany(b => b.BatchInterns)
                .HasForeignKey(bi => bi.InternshipId)

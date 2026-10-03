@@ -15,19 +15,32 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // ─── Database ────────────────────────────────────────────────────────
+        // ─── 1. Database ────────────────────────────────────────────────────────
         services.AddDbContext<InternFlowDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? "Server=localhost;Database=InternFlowDb;Trusted_Connection=True;TrustServerCertificate=True;";
             options.UseSqlServer(connectionString);
         });
-        // ─── Application Services ────────────────────────────────────────────
+
+        services.AddScoped<IInternFlowDbContext>(sp => sp.GetRequiredService<InternFlowDbContext>());
+
+        // ─── 2. MediatR (CQRS) ──────────────────────────────────────────────────
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(IInternFlowDbContext).Assembly);
+        });
+
+        // ─── 3. Application & Infrastructure Services ───────────────────────────
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
-        // ─── Health Checks ───────────────────────────────────────────────────
+
+        // ─── 4. Health Checks ───────────────────────────────────────────────────
         services.AddHealthChecks()
             .AddDbContextCheck<InternFlowDbContext>("database", tags: new[] { "ready" });
+
         return services;
     }
 }
