@@ -10,7 +10,6 @@ public class FakeCurrentUserService : ICurrentUserService
 
     public string? Email => "mentor.demo@internflow.com";
 
-    // Dùng hằng số chuỗi UserRoles.Mentor thay vì Enum UserRole
     public string? Role => UserRole.Mentor.ToString();
 
     public bool IsAuthenticated => true;

@@ -1,3 +1,4 @@
+using InternFlow.Application.Common.Interfaces;
 using InternFlow.Domain.Evaluations;
 using InternFlow.Domain.Identity;
 using InternFlow.Domain.Internships;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.Infrastructure.Data;
 
-public class InternFlowDbContext : DbContext
+public class InternFlowDbContext : DbContext, IInternFlowDbContext
 {
     public InternFlowDbContext(DbContextOptions<InternFlowDbContext> options) : base(options)
     {
@@ -37,8 +38,5 @@ public class InternFlowDbContext : DbContext
 
         // Tự động quét và nạp toàn bộ cấu hình IEntityTypeConfiguration trong assembly Infrastructure
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(InternFlowDbContext).Assembly);
-
-
-
     }
 }
