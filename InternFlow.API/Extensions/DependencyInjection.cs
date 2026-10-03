@@ -1,6 +1,11 @@
+using FluentValidation;
+using InternFlow.Application.Common.Behaviors;
 using InternFlow.Application.Common.Interfaces;
+using InternFlow.Application.Features.Projects.Commands.CreateProject;
+using InternFlow.Application.Features.Projects.Queries.GetProjects;
 using InternFlow.Infrastructure.Data;
 using InternFlow.Infrastructure.Services;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.API.Extensions;
@@ -30,12 +35,22 @@ public static class DependencyInjection
         {
             cfg.RegisterServicesFromAssembly(typeof(IInternFlowDbContext).Assembly);
         });
+        // FluentValidation
+        services.AddValidatorsFromAssembly(
+            typeof(CreateProjectCommandValidator).Assembly,
+            includeInternalTypes: true);
+        services.AddAutoMapper(cfg => { }, typeof(CreateProjectCommandValidator).Assembly);
+        services.AddTransient(
+            typeof(IPipelineBehavior<,>),
+            typeof(ValidationBehavior<,>));
+
 
         // ─── 3. Application & Infrastructure Services ───────────────────────────
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+        services.AddScoped<IPagedQueryExecutor, PagedQueryExecutor>();
 
         // ─── 4. Health Checks ───────────────────────────────────────────────────
         services.AddHealthChecks()
