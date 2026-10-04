@@ -105,12 +105,17 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
+
+        app.UseSwaggerUI();
+        await app.MigrateAndSeedAsync();
+
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
         });
 
         await app.MigrateAndSeedAsync();
+
     }
 
     app.UseHttpsRedirection();

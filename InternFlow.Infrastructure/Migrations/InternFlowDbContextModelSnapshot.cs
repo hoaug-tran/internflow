@@ -17,7 +17,7 @@ namespace InternFlow.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.12")
+                .HasAnnotation("ProductVersion", "8.0.31")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -864,7 +864,13 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigneeId");
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("AssigneeId", "Status");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("AssigneeId", "Status"), new[] { "ProjectId", "Priority", "DueDate" });
+
+                    b.HasIndex("ProjectId", "CreatedAt");
 
                     b.HasIndex("CreatedBy");
 
@@ -896,19 +902,23 @@ namespace InternFlow.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
 
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
                     b.Property<decimal>("Hours")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -930,12 +940,19 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TaskItemId");
+                    b.HasIndex("TaskItemId")
+                        .HasDatabaseName("IX_WorkLogs_TaskItemId");
 
                     b.HasIndex("UserId", "WorkDate")
+                        .HasDatabaseName("IX_WorkLogs_UserId_WorkDate")
                         .HasFilter("[DeletedAt] IS NULL");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("UserId", "WorkDate"), new[] { "TaskItemId", "Hours" });
+
+                    b.HasIndex("TaskItemId", "UserId", "WorkDate")
+                        .IsUnique()
+                        .HasDatabaseName("UX_WorkLogs_Task_User_Date_Active")
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("WorkLogs", "dbo", t =>
                         {
@@ -1243,7 +1260,7 @@ namespace InternFlow.Infrastructure.Migrations
                         .HasForeignKey("AssigneeId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("InternFlow.Domain.Identity.User", null)
+                    b.HasOne("InternFlow.Domain.Identity.User", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1256,6 +1273,8 @@ namespace InternFlow.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Assignee");
+
+                    b.Navigation("Creator");
 
                     b.Navigation("Project");
                 });
