@@ -1,3 +1,4 @@
+using AutoMapper;
 using InternFlow.Application.Common.Extensions;
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Projects.DTOs;
@@ -14,33 +15,31 @@ public sealed class CreateProjectCommandHandler
 {
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
+    private readonly IMapper _mapper;
 
     public CreateProjectCommandHandler(
         IInternFlowDbContext db,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IMapper mapper)
     {
         _db = db;
         _currentUser = currentUser;
+        _mapper = mapper;
     }
 
     public async Task<ProjectResponse> Handle(
         CreateProjectCommand cmd, CancellationToken ct)
     {
-        // 1. Role check
         var userId = _currentUser.EnsureRole(UserRole.Admin, UserRole.Mentor);
 
-        // 2. Internship tồn tại + Active
         var internship = await _db.Internships
             .AsNoTracking()
-            .Where(i => i.Id == cmd.Request.InternshipId)
-            .Select(i => new { i.Id, i.Status })
-            .FirstOrDefaultAsync(ct);
+            .AnyAsync(i => i.Id == cmd.Request.InternshipId && i.Status == Domain.Internships.InternshipStatus.Active, ct);
 
-        if (internship is null || internship.Status.ToString() != "Active")
+        if (!internship)
             throw new NotFoundException(
                 $"Đợt {cmd.Request.InternshipId} không tồn tại hoặc không Active.");
 
-        // 3. Chặn trùng tên
         var exists = await _db.Projects.AnyAsync(p =>
             p.InternshipId == cmd.Request.InternshipId &&
             p.Name == cmd.Request.Name, ct);
@@ -48,25 +47,18 @@ public sealed class CreateProjectCommandHandler
         if (exists)
             throw new ConflictException($"Dự án '{cmd.Request.Name}' đã tồn tại.");
 
-        // 4. Tạo entity — mapping thủ công
+        var project = _mapper.Map<Project>(cmd.Request);
         var now = DateTime.UtcNow;
-        var project = new Project
-        {
-            Id = Guid.NewGuid(),
-            InternshipId = cmd.Request.InternshipId,
-            Name = cmd.Request.Name,
-            Description = cmd.Request.Description,
-            Status = ProjectStatus.Planned,
-            StartDate = cmd.Request.StartDate,
-            EndDate = cmd.Request.EndDate,
-            CreatedBy = userId,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+
+        project.Id = Guid.NewGuid();
+        project.Status = ProjectStatus.Planned;
+        project.CreatedBy = userId;
+        project.CreatedAt = now;
+        project.UpdatedAt = now;
 
         _db.Projects.Add(project);
 
-        // 5. Người tạo → Lead
+        // Người tạo -> Lead
         _db.ProjectMembers.Add(new ProjectMember
         {
             ProjectId = project.Id,
@@ -77,17 +69,6 @@ public sealed class CreateProjectCommandHandler
 
         await _db.SaveChangesAsync(ct);
 
-        // 6. Response — mapping thủ công
-        return new ProjectResponse(
-            project.Id,
-            project.InternshipId,
-            project.Name,
-            project.Description,
-            project.Status.ToString(),
-            project.StartDate,
-            project.EndDate,
-            project.CreatedBy,
-            project.CreatedAt,
-            project.UpdatedAt);
+        return _mapper.Map<ProjectResponse>(project);
     }
 }

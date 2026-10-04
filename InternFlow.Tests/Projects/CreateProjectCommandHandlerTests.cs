@@ -1,142 +1,141 @@
-using AutoMapper;
 using FluentAssertions;
-using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Projects.Commands.CreateProject;
 using InternFlow.Application.Features.Projects.DTOs;
 using InternFlow.Domain.Identity;
 using InternFlow.Domain.Internships;
 using InternFlow.Domain.Projects;
-using InternFlow.Infrastructure.Data;
 using InternFlow.Shared.Exceptions;
+using InternFlow.Tests.Common.TestHelpers;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Xunit;
 
 namespace InternFlow.Tests.Features.Projects;
 
 public class CreateProjectCommandHandlerTests
 {
-    private static InternFlowDbContext CreateDb()
-    {
-        var options = new DbContextOptionsBuilder<InternFlowDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new InternFlowDbContext(options);
-    }
-
-    private static ICurrentUserService MockUser(Guid id, UserRole role)
-    {
-        var m = new Mock<ICurrentUserService>();
-        m.Setup(x => x.UserId).Returns(id);
-        m.Setup(x => x.Role).Returns(role.ToString());
-        m.Setup(x => x.IsAuthenticated).Returns(true);
-        m.Setup(x => x.IsInRole(It.IsAny<string>()))
-            .Returns<string>(r => string.Equals(r, role.ToString(),
-                StringComparison.OrdinalIgnoreCase));
-        return m.Object;
-    }
-
     [Fact]
-    public async Task Create_ValidInternship_Success()
+    public async Task Create_ValidInternship_Success_CreatorBecomesLead()
     {
-        var db = CreateDb();
+        // Arrange
+        await using var db = TestDbContextFactory.Create();
         var internshipId = Guid.NewGuid();
         var adminId = Guid.NewGuid();
 
-        db.Internships.Add(new Internship
-        {
-            Id = internshipId,
-            Name = "Summer 2026",
-            StartDate = new DateOnly(2026, 6, 1),
-            EndDate = new DateOnly(2026, 9, 30),
-            Status = InternshipStatus.Active,
-            CreatedBy = adminId
-        });
+        db.Internships.Add(EntityFactory.CreateInternship(internshipId, adminId));
         await db.SaveChangesAsync();
-        var internshipSvc = new Mock<IInternshipQueryService>();
+
         var handler = new CreateProjectCommandHandler(
-            db, MockUser(adminId, UserRole.Admin));
+            db,
+            MockCurrentUserFactory.Create(adminId, UserRole.Admin),
+            TestMapperFactory.Instance);
 
         var request = new CreateProjectRequest(
             internshipId, "Payment API", "Desc", null, null);
 
-        var result = await handler.Handle(new CreateProjectCommand(request), default);
+        // Act
+        var result = await handler.Handle(
+            new CreateProjectCommand(request), CancellationToken.None);
 
+        // Assert
         result.Id.Should().NotBeEmpty();
-        result.Status.Should().Be("Planned");
+        result.Name.Should().Be("Payment API");
         result.CreatedBy.Should().Be(adminId);
 
-        // Lead created
+        // Người tạo → Lead
         var lead = await db.ProjectMembers
             .FirstOrDefaultAsync(m => m.ProjectId == result.Id);
         lead.Should().NotBeNull();
-        lead!.Role.Should().Be(MemberRole.Lead);
+        lead!.UserId.Should().Be(adminId);
+        lead.Role.Should().Be(MemberRole.Lead);
+        lead.RemovedAt.Should().BeNull();
     }
 
     [Fact]
     public async Task Create_InactiveInternship_ThrowsNotFound()
     {
-        var db = CreateDb();
+        // Arrange
+        await using var db = TestDbContextFactory.Create();
+        var adminId = Guid.NewGuid();
+
+        db.Internships.Add(EntityFactory.CreateInternship(
+            status: InternshipStatus.Closed, createdBy: adminId));
+        await db.SaveChangesAsync();
+
         var handler = new CreateProjectCommandHandler(
-            db, MockUser(Guid.NewGuid(), UserRole.Admin)
-            );
+            db,
+            MockCurrentUserFactory.Create(adminId, UserRole.Admin),
+            TestMapperFactory.Instance);
 
         var request = new CreateProjectRequest(
-            Guid.NewGuid(), "Test", null, null, null);
+            Guid.NewGuid(), "Test", null, null, null);   // internshipId sai
 
+        // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>
-            handler.Handle(new CreateProjectCommand(request), default));
+            handler.Handle(new CreateProjectCommand(request), CancellationToken.None));
     }
 
     [Fact]
     public async Task Create_DuplicateName_ThrowsConflict()
     {
-        var db = CreateDb();
+        // Arrange
+        await using var db = TestDbContextFactory.Create();
         var internshipId = Guid.NewGuid();
         var adminId = Guid.NewGuid();
 
-        db.Internships.Add(new Internship
-        {
-            Id = internshipId,
-            Name = "S2026",
-            StartDate = new DateOnly(2026, 6, 1),
-            EndDate = new DateOnly(2026, 9, 30),
-            Status = InternshipStatus.Active,
-            CreatedBy = adminId
-        });
-        db.Projects.Add(new Project
-        {
-            Id = Guid.NewGuid(),
-            InternshipId = internshipId,
-            Name = "Payment API",
-            Status = ProjectStatus.Planned,
-            CreatedBy = adminId,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        });
+        db.Internships.Add(EntityFactory.CreateInternship(internshipId, adminId));
+        db.Projects.Add(EntityFactory.CreateProject(
+            internshipId, adminId, "Payment API"));
         await db.SaveChangesAsync();
+
         var handler = new CreateProjectCommandHandler(
-            db, MockUser(adminId, UserRole.Admin)
-            );
+            db,
+            MockCurrentUserFactory.Create(adminId, UserRole.Admin),
+            TestMapperFactory.Instance);
 
         var request = new CreateProjectRequest(
             internshipId, "Payment API", null, null, null);
 
+        // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.Handle(new CreateProjectCommand(request), default));
+            handler.Handle(new CreateProjectCommand(request), CancellationToken.None));
     }
 
     [Fact]
     public async Task Create_InternRole_ThrowsForbidden()
     {
-        var db = CreateDb();
+        // Arrange
+        await using var db = TestDbContextFactory.Create();
+        var internId = Guid.NewGuid();
+
         var handler = new CreateProjectCommandHandler(
-            db, MockUser(Guid.NewGuid(), UserRole.Intern));
+            db,
+            MockCurrentUserFactory.Create(internId, UserRole.Intern),
+            TestMapperFactory.Instance);
 
         var request = new CreateProjectRequest(
             Guid.NewGuid(), "X", null, null, null);
 
+        // Act + Assert
         await Assert.ThrowsAsync<ForbiddenException>(() =>
-            handler.Handle(new CreateProjectCommand(request), default));
+            handler.Handle(new CreateProjectCommand(request), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Create_Unauthenticated_ThrowsForbidden()
+    {
+        // Arrange
+        await using var db = TestDbContextFactory.Create();
+
+        var handler = new CreateProjectCommandHandler(
+            db,
+            MockCurrentUserFactory.Anonymous(),
+            TestMapperFactory.Instance);
+
+        var request = new CreateProjectRequest(
+            Guid.NewGuid(), "X", null, null, null);
+
+        // Act + Assert
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            handler.Handle(new CreateProjectCommand(request), CancellationToken.None));
     }
 }
