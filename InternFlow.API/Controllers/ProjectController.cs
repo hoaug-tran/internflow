@@ -1,4 +1,5 @@
 using InternFlow.Application.Features.Projects.Commands.CreateProject;
+using InternFlow.Application.Features.Projects.Commands.UpdateProject;
 using InternFlow.Application.Features.Projects.DTOs;
 using InternFlow.Application.Features.Projects.Queries.GetProjects;
 using MediatR;
@@ -51,6 +52,21 @@ public class ProjectsController : ControllerBase
     )
     {
         var result = await _mediator.Send(new GetProjectsQuery(parameters), ct);
+        return Ok(result);
+    }
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] UpdateProjectRequest request,
+        CancellationToken ct)
+    {
+        var result = await _mediator.Send(
+            new UpdateProjectCommand(id, request), ct);
         return Ok(result);
     }
 
