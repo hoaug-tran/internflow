@@ -5,8 +5,6 @@ using InternFlow.Domain.Identity;
 using InternFlow.Domain.Projects;
 using InternFlow.Shared.Exceptions;
 using InternFlow.Tests.Common.TestHelpers;
-using Microsoft.EntityFrameworkCore;
-using Xunit;
 
 namespace InternFlow.Tests.Features.Projects;
 

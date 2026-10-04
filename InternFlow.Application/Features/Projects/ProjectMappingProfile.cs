@@ -33,5 +33,11 @@ public sealed class ProjectMappingProfile : Profile
             .ForMember(d => d.Members, o => o.Ignore())
             .ForMember(d => d.Tasks, o => o.Ignore());
 
+        CreateMap<ProjectMember, ProjectMemberResponse>()
+            .ForCtorParam("FullName", o => o.MapFrom(s => s.User.FullName))
+            .ForCtorParam("Email", o => o.MapFrom(s => s.User.Email))
+            .ForCtorParam("Role", o => o.MapFrom(s => s.Role.ToString()));
+
+
     }
 }

@@ -44,3 +44,12 @@ public sealed class ProjectQueryParameters : PaginationQuery
     public Guid? InternshipId { get; set; }
     public string? Status { get; set; }
 }
+public sealed record AddProjectMemberRequest(
+    Guid UserId,
+    MemberRole Role);
+public sealed record ProjectMemberResponse(
+    Guid UserId,
+    string FullName,
+    string Email,
+    string Role,
+    DateTime JoinedAt);
