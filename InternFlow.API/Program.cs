@@ -1,10 +1,8 @@
 using System.Text;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
-using InternFlow.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -98,27 +96,24 @@ try
 
     // Pipeline Middlewares
     app.UseMiddleware<TraceIdMiddleware>();
-    app.UseSerilogRequestLogging();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseSerilogRequestLogging();
 
-    // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-
-        app.UseSwaggerUI();
-        await app.MigrateAndSeedAsync();
 
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
         });
 
-        await app.MigrateAndSeedAsync();
-
     }
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
 
     app.UseAuthentication();
     app.UseAuthorization();
@@ -127,6 +122,7 @@ try
     app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 
     app.MapControllers();
+    await app.MigrateAndSeedAsync();
 
     app.Run();
 }
