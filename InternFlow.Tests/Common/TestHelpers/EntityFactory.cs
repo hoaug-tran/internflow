@@ -1,3 +1,4 @@
+using InternFlow.Domain.Identity;
 using InternFlow.Domain.Internships;
 using InternFlow.Domain.Projects;
 
@@ -52,6 +53,24 @@ public static class EntityFactory
             UserId = userId,
             Role = MemberRole.Lead,
             JoinedAt = DateTime.UtcNow
+        };
+    }
+    public static User CreateUser(
+        Guid id,
+        UserRole role,
+        string? email = null,
+        string? fullName = null,
+        bool isActive = true)
+    {
+        return new User
+        {
+            Id = id,
+            Email = email ?? $"{role.ToString().ToLower()}@test.com",
+            FullName = fullName ?? role.ToString(),
+            Role = role,
+            PasswordHash = "hash",
+            IsActive = isActive,
+            RowVersion = Array.Empty<byte>()
         };
     }
 }

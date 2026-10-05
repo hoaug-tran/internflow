@@ -1,5 +1,6 @@
 using InternFlow.Domain.Projects;
 using InternFlow.Shared.Models;
+using TaskStatus = InternFlow.Domain.Projects.TaskStatus;
 
 namespace InternFlow.Application.Features.Tasks.DTOs;
 
@@ -31,6 +32,24 @@ public sealed class TaskResponse
 public sealed class TaskQueryParameters : PaginationQuery
 {
     public Guid? ProjectId { get; set; }
-    public string? Status { get; set; }
+    public TaskStatus? Status { get; set; }
     public Guid? AssigneeId { get; set; }
 }
+public sealed record ChangeTaskStatusRequest(
+    TaskStatus NewStatus);
+public sealed record TaskListItemResponse(
+    Guid Id,
+    Guid ProjectId,
+    string Title,
+    string Status,
+    string Priority,
+    Guid? AssigneeId,
+    string? AssigneeName,
+    DateOnly? DueDate,
+    DateTime CreatedAt);
+public sealed record UpdateTaskRequest(
+    string Title,
+    string? Description,
+    TaskPriority Priority,
+    DateOnly? DueDate,
+    Guid AssigneeId);
