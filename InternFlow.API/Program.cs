@@ -107,6 +107,7 @@ try
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
         });
+        await app.MigrateAndSeedAsync();
 
     }
 
@@ -122,7 +123,6 @@ try
     app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 
     app.MapControllers();
-    await app.MigrateAndSeedAsync();
 
     app.Run();
 }
