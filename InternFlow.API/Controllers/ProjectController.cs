@@ -72,6 +72,12 @@ public class ProjectsController : ControllerBase
             new UpdateProjectCommand(id, request), ct);
         return Ok(result);
     }
+    [HttpPost("{id:guid}/members")]
+    [ProducesResponseType(typeof(ProjectMemberResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> AddMember(
     Guid id,
     [FromBody] AddProjectMemberRequest request,
