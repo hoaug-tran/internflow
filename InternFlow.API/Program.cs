@@ -1,10 +1,8 @@
 using System.Text;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
-using InternFlow.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -110,6 +108,7 @@ try
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
         });
         await app.MigrateAndSeedAsync();
+
     }
 
     app.UseHttpsRedirection();

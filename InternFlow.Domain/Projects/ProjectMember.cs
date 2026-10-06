@@ -8,6 +8,7 @@ public class ProjectMember
     public Guid UserId { get; set; }
     public MemberRole Role { get; set; } = MemberRole.Member;
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? RemovedAt { get; set; }
 
     public Project Project { get; set; } = null!;
     public User User { get; set; } = null!;
