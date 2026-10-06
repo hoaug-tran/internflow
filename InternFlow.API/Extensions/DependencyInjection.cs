@@ -32,9 +32,10 @@ public static class DependencyInjection
         });
 
         // ─── 3. Application & Infrastructure Services ───────────────────────────
+        services.AddHttpContextAccessor();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
-        services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
 
         // ─── 4. Health Checks ───────────────────────────────────────────────────
