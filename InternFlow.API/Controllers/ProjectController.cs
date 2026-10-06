@@ -1,3 +1,4 @@
+using InternFlow.API.Controllers.Conventions;
 using InternFlow.Application.Features.Projects.Commands.AddProjectMember;
 using InternFlow.Application.Features.Projects.Commands.CreateProject;
 using InternFlow.Application.Features.Projects.Commands.RemoveProjectMember;
@@ -5,113 +6,81 @@ using InternFlow.Application.Features.Projects.Commands.UpdateProject;
 using InternFlow.Application.Features.Projects.DTOs;
 using InternFlow.Application.Features.Projects.Queries.GetProjectMembers;
 using InternFlow.Application.Features.Projects.Queries.GetProjects;
+using InternFlow.Shared.Common;
+using InternFlow.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InternFlow.API.Controllers;
 
-[ApiController]
 [Route("api/projects")]
 [Authorize]
-public class ProjectsController : ControllerBase
+public class ProjectsController : ApiControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public ProjectsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    /// <summary>
-    /// POST /api/projects — Tạo project mới.
-    /// Chỉ Admin/Mentor.
-    /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Create(
+    public async Task<ApiResponse<ProjectResponse>> Create(
         [FromBody] CreateProjectRequest request,
         CancellationToken ct)
     {
-        var command = new CreateProjectCommand(request);
-        var result = await _mediator.Send(command, ct);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        var result = await Sender.Send(
+            new CreateProjectCommand(request), ct);
+
+        return ApiResponse<ProjectResponse>.Ok(result, "Tạo dự án thành công");
+    }
+    [HttpGet]
+    public async Task<ApiResponse<PagedResult<ProjectListItemResponse>>> GetList(
+        [FromQuery] ProjectQueryParameters parameters,
+        CancellationToken ct)
+    {
+        var result = await Sender.Send(
+            new GetProjectsQuery(parameters), ct);
+
+        return ApiResponse<PagedResult<ProjectListItemResponse>>.Ok(result);
     }
 
-    /// <summary>
-    /// GET /api/projects — List project có phân trang.
-    /// Scope theo role: Admin thấy tất cả, Mentor/Intern chỉ thấy dự án của mình.
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetList(
-        ProjectQueryParameters parameters,
-        CancellationToken ct
-    )
-    {
-        var result = await _mediator.Send(new GetProjectsQuery(parameters), ct);
-        return Ok(result);
-    }
     [HttpPut("{id:guid}")]
-    [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Update(
+    public async Task<ApiResponse<ProjectResponse>> Update(
         Guid id,
         [FromBody] UpdateProjectRequest request,
         CancellationToken ct)
     {
-        var result = await _mediator.Send(
+        var result = await Sender.Send(
             new UpdateProjectCommand(id, request), ct);
-        return Ok(result);
+
+        return ApiResponse<ProjectResponse>.Ok(result, "Cập nhật dự án thành công");
     }
+
     [HttpPost("{id:guid}/members")]
-    [ProducesResponseType(typeof(ProjectMemberResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> AddMember(
-    Guid id,
-    [FromBody] AddProjectMemberRequest request,
-    CancellationToken ct)
+    public async Task<ApiResponse<ProjectMemberResponse>> AddMember(
+        Guid id,
+        [FromBody] AddProjectMemberRequest request,
+        CancellationToken ct)
     {
-        var result = await _mediator.Send(
+        var result = await Sender.Send(
             new AddProjectMemberCommand(id, request), ct);
-        return CreatedAtAction(nameof(GetMembers), new { id }, result);
+
+        return ApiResponse<ProjectMemberResponse>.Ok(result, "Thêm thành viên thành công");
     }
 
     [HttpDelete("{id:guid}/members/{userId:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> RemoveMember(
-    Guid id,
-    Guid userId,
-    CancellationToken ct)
+    public async Task<ApiResponse> RemoveMember(
+        Guid id,
+        Guid userId,
+        CancellationToken ct)
     {
-        await _mediator.Send(new RemoveProjectMemberCommand(id, userId), ct);
-        return NoContent();
+        await Sender.Send(new RemoveProjectMemberCommand(id, userId), ct);
+
+        return ApiResponse.Ok("Đã xóa thành viên khỏi dự án");
     }
+
     [HttpGet("{id:guid}/members")]
-    [ProducesResponseType(typeof(IReadOnlyList<ProjectMemberResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetMembers(Guid id, CancellationToken ct)
+    public async Task<ApiResponse<IReadOnlyList<ProjectMemberResponse>>> GetMembers(
+        Guid id,
+        CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetProjectMembersQuery(id), ct);
-        return Ok(result);
+        var result = await Sender.Send(new GetProjectMembersQuery(id), ct);
+
+        return ApiResponse<IReadOnlyList<ProjectMemberResponse>>.Ok(result);
     }
-
-
-
-    [HttpGet("{id:guid}")]
-    public IActionResult GetById(Guid id) => throw new NotImplementedException();
 }

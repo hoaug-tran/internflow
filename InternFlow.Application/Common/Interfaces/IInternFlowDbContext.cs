@@ -18,6 +18,7 @@ public interface IInternFlowDbContext
     DbSet<Project> Projects { get; }
     DbSet<ProjectMember> ProjectMembers { get; }
     DbSet<TaskItem> Tasks { get; }
+    DbSet<WorkLog> WorkLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

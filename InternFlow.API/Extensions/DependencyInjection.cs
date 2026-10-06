@@ -52,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
         services.AddScoped<IPagedQueryExecutor, PagedQueryExecutor>();
 
+
         // ─── 4. Health Checks ───────────────────────────────────────────────────
         services.AddHealthChecks()
             .AddDbContextCheck<InternFlowDbContext>("database", tags: new[] { "ready" });

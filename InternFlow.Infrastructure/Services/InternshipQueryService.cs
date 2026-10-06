@@ -1,6 +1,7 @@
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using InternFlow.Domain.Internships;
 
 namespace InternFlow.Infrastructure.Services;
 
@@ -42,5 +43,38 @@ public class InternshipQueryService : IInternshipQueryService
             .AsNoTracking()
             .AnyAsync(bi => bi.InternId == internId
                          && bi.InternshipId == batchId, ct);
+    }
+
+    public async Task<bool> IsWorkDateInBatchAsync(
+        Guid internshipId,
+        DateOnly workDate,
+        CancellationToken ct = default)
+    {
+        return await _context.Internships
+            .AsNoTracking()
+            .AnyAsync(i => i.Id == internshipId
+                        && i.StartDate <= workDate
+                        && i.EndDate >= workDate, ct);
+    }
+    public async Task<IReadOnlyList<Guid>> GetInternsOfMentorAsync(
+        Guid mentorId,
+        CancellationToken ct = default)
+    {
+        return await _context.MentorAssignments
+            .AsNoTracking()
+            .Where(ma => ma.MentorId == mentorId && ma.EndedAt == null)
+            .Select(ma => ma.InternId)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
+    public async Task<bool> IsInternActiveInBatchAsync(
+    Guid internId, Guid batchId, CancellationToken ct = default)
+    {
+        return await _context.BatchInterns
+            .AnyAsync(bi => bi.InternId == internId
+                         && bi.InternshipId == batchId
+                         && bi.Status == BatchInternStatus.InProgress
+                         && bi.Intern.IsActive, ct);
     }
 }

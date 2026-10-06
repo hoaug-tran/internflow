@@ -1,4 +1,5 @@
 using System.Text;
+using InternFlow.API.Conventions;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,7 +20,10 @@ try
         .Enrich.FromLogContext());
 
     // Add services to the container.
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+{
+    options.Conventions.Add(new ApiResponseConvention());
+});
     builder.Services.AddEndpointsApiExplorer();
 
     // Cấu hình Swagger với JWT Bearer Authorize
