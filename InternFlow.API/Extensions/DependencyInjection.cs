@@ -32,10 +32,21 @@ public static class DependencyInjection
         });
 
         // ─── 3. Application & Infrastructure Services ───────────────────────────
+        services.AddHttpContextAccessor();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
-        services.AddScoped<ICurrentUserService, FakeCurrentUserService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+        services.AddStackExchangeRedisCache(options =>
+        {
+            var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+            options.ConfigurationOptions = StackExchange.Redis.ConfigurationOptions.Parse(redis);
+            options.ConfigurationOptions.AbortOnConnectFail = false;
+            options.ConfigurationOptions.ConnectTimeout = 1000;
+            options.ConfigurationOptions.SyncTimeout = 1000;
+            options.ConfigurationOptions.AsyncTimeout = 1000;
+        });
+        services.AddSingleton<ICacheService, RedisCacheService>();
 
         // ─── 4. Health Checks ───────────────────────────────────────────────────
         services.AddHealthChecks()

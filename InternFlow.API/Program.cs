@@ -34,6 +34,7 @@ try
             Description = "Hệ thống Quản lý Thực tập & Phân công Công việc"
         });
 
+
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
             Name = "Authorization",
@@ -58,6 +59,7 @@ try
                 Array.Empty<string>()
             }
         });
+        options.OperationFilter<InternFlow.API.Swagger.ErrorResponsesOperationFilter>();
     });
 
     // 1. Cấu hình DbContext, MediatR, HealthChecks và các Service dự án
@@ -105,17 +107,13 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-
-        app.UseSwaggerUI();
-        await app.MigrateAndSeedAsync();
-
         app.UseSwaggerUI(c =>
         {
+      
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
         });
 
         await app.MigrateAndSeedAsync();
-
     }
 
     app.UseHttpsRedirection();

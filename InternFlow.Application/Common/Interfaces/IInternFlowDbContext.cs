@@ -1,3 +1,4 @@
+using InternFlow.Domain.Evaluations;
 using InternFlow.Domain.Identity;
 using InternFlow.Domain.Internships;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,11 @@ public interface IInternFlowDbContext
     DbSet<BatchMentor> BatchMentors { get; }
     DbSet<BatchIntern> BatchInterns { get; }
     DbSet<MentorAssignment> MentorAssignments { get; }
+
+    DbSet<EvaluationPeriod> EvaluationPeriods { get; }
+    DbSet<Criterion> Criteria { get; }
+    DbSet<Evaluation> Evaluations { get; }
+    DbSet<EvaluationDetail> EvaluationDetails { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
