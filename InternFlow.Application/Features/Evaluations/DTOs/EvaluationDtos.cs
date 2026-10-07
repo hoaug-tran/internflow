@@ -50,3 +50,11 @@ public class EvaluationDto
     public DateTime? SubmittedAt { get; set; }
     public List<EvaluationDetailDto> Details { get; set; } = new();
 }
+public class MyEvaluationSummaryDto
+{
+    public Guid Id { get; set; }
+    public Guid EvaluationPeriodId { get; set; }
+    public string PeriodName { get; set; } = string.Empty;
+    public decimal TotalScore { get; set; }
+    public DateTime? SubmittedAt { get; set; }
+}
