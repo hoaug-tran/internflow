@@ -10,10 +10,16 @@ namespace InternFlow.Application.Features.Internships.Commands.AddBatchMentor;
 public class AddBatchMentorCommandHandler : IRequestHandler<AddBatchMentorCommand, ApiResponse<bool>>
 {
     private readonly IInternFlowDbContext _context;
+    private readonly ICurrentUserService? _currentUserService;
 
-    public AddBatchMentorCommandHandler(IInternFlowDbContext context)
+    public AddBatchMentorCommandHandler(IInternFlowDbContext context) : this(context, null)
+    {
+    }
+
+    public AddBatchMentorCommandHandler(IInternFlowDbContext context, ICurrentUserService? currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<bool>> Handle(AddBatchMentorCommand request, CancellationToken cancellationToken)
@@ -52,12 +58,14 @@ public class AddBatchMentorCommandHandler : IRequestHandler<AddBatchMentorComman
             return ApiResponse<bool>.Fail("Mentor này đã tham gia vào đợt thực tập từ trước.");
         }
 
+        var addedBy = request.AddedBy ?? _currentUserService?.UserId ?? Guid.Empty;
+
         var batchMentor = new BatchMentor
         {
             InternshipId = request.InternshipId,
             MentorId = request.MentorId,
             MentorRole = UserRole.Mentor,
-            AddedBy = request.AddedBy,
+            AddedBy = addedBy,
             JoinedAt = DateTime.UtcNow
         };
 

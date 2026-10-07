@@ -10,10 +10,16 @@ namespace InternFlow.Application.Features.Internships.Commands.AddBatchIntern;
 public class AddBatchInternCommandHandler : IRequestHandler<AddBatchInternCommand, ApiResponse<bool>>
 {
     private readonly IInternFlowDbContext _context;
+    private readonly ICurrentUserService? _currentUserService;
 
-    public AddBatchInternCommandHandler(IInternFlowDbContext context)
+    public AddBatchInternCommandHandler(IInternFlowDbContext context) : this(context, null)
+    {
+    }
+
+    public AddBatchInternCommandHandler(IInternFlowDbContext context, ICurrentUserService? currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<bool>> Handle(AddBatchInternCommand request, CancellationToken cancellationToken)
@@ -52,13 +58,15 @@ public class AddBatchInternCommandHandler : IRequestHandler<AddBatchInternComman
             return ApiResponse<bool>.Fail("Thực tập sinh này đã tham gia vào đợt thực tập từ trước.");
         }
 
+        var addedBy = request.AddedBy ?? _currentUserService?.UserId ?? Guid.Empty;
+
         var batchIntern = new BatchIntern
         {
             InternshipId = request.InternshipId,
             InternId = request.InternId,
             InternRole = UserRole.Intern,
             Status = BatchInternStatus.InProgress,
-            AddedBy = request.AddedBy,
+            AddedBy = addedBy,
             JoinedAt = DateTime.UtcNow,
             Notes = request.Notes
         };

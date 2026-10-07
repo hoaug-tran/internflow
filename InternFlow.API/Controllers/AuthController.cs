@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using InternFlow.API.Controllers.Conventions;
 using InternFlow.API.Extensions;
 using InternFlow.Application.Features.Auth.Commands.Login;
 using InternFlow.Application.Features.Auth.Commands.RefreshToken;
@@ -6,104 +6,55 @@ using InternFlow.Application.Features.Auth.Commands.RevokeToken;
 using InternFlow.Application.Features.Auth.DTOs;
 using InternFlow.Application.Features.Auth.Queries.GetCurrentUser;
 using InternFlow.Shared.Common;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InternFlow.API.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : ApiControllerBase
 {
-    private readonly ISender _sender;
-
-    public AuthController(ISender sender)
-    {
-        _sender = sender;
-    }
-
     [HttpPost("login")]
-    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<ApiResponse<AuthResponse>> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken ct)
     {
-        var command = new LoginCommand(
+        return await Sender.Send(new LoginCommand(
             request.Email,
             request.Password,
             HttpContext.GetIpAddress(),
             HttpContext.GetUserAgent()
-        );
-
-        var result = await _sender.Send(command);
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        ), ct);
     }
 
     [HttpPost("refresh-token")]
-    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+    public async Task<ApiResponse<AuthResponse>> RefreshToken(
+        [FromBody] RefreshTokenRequest request,
+        CancellationToken ct)
     {
-        var command = new RefreshTokenCommand(
+        return await Sender.Send(new RefreshTokenCommand(
             request.RefreshToken,
             HttpContext.GetIpAddress(),
             HttpContext.GetUserAgent()
-        );
-
-        var result = await _sender.Send(command);
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        ), ct);
     }
 
     [HttpPost("revoke-token")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RevokeToken([FromBody] RevokeTokenRequest request)
+    public async Task<ApiResponse<bool>> RevokeToken(
+        [FromBody] RevokeTokenRequest request,
+        CancellationToken ct)
     {
-        var command = new RevokeTokenCommand(
+        return await Sender.Send(new RevokeTokenCommand(
             request.RefreshToken,
             request.Reason,
             HttpContext.GetIpAddress()
-        );
-
-        var result = await _sender.Send(command);
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        ), ct);
     }
 
     [HttpGet("me")]
     [Authorize]
-    [ProducesResponseType(typeof(ApiResponse<UserInfoResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetCurrentUser()
+    public async Task<ApiResponse<UserInfoResponse>> GetCurrentUser(CancellationToken ct)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                        ?? User.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
-        {
-            return Unauthorized(ApiResponse<UserInfoResponse>.Fail("Không xác định được danh tính người dùng"));
-        }
-
-        var result = await _sender.Send(new GetCurrentUserQuery(userId));
-        if (!result.Success)
-        {
-            return NotFound(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new GetCurrentUserQuery(), ct);
     }
 }

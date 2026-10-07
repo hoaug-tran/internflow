@@ -8,5 +8,5 @@ public record CreateInternshipCommand(
     string Name,
     DateOnly StartDate,
     DateOnly EndDate,
-    Guid CreatedBy
+    Guid? CreatedBy = null
 ) : IRequest<ApiResponse<InternshipDto>>;

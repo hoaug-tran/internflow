@@ -33,6 +33,7 @@ public class ExceptionHandlingMiddleware
 
             var status = ex switch
             {
+                FluentValidation.ValidationException => StatusCodes.Status400BadRequest,
                 NotFoundException => StatusCodes.Status404NotFound,
                 BadRequestException => StatusCodes.Status400BadRequest,
                 ConflictException => StatusCodes.Status409Conflict,
@@ -48,10 +49,22 @@ public class ExceptionHandlingMiddleware
             var problem = new ProblemDetails
             {
                 Status = status,
-                Title = status >= 500 ? "Internal Server Error" : ex.GetType().Name.Replace("Exception", ""),
-                Detail = status >= 500 && !_env.IsDevelopment() ? "Đã có lỗi xảy ra." : ex.Message,
+                Title = status >= 500
+                    ? "Internal Server Error"
+                    : (ex is FluentValidation.ValidationException ? "Validation Error" : ex.GetType().Name.Replace("Exception", "")),
+                Detail = ex is FluentValidation.ValidationException fvEx
+                    ? string.Join("; ", fvEx.Errors.Select(e => e.ErrorMessage))
+                    : (status >= 500 && !_env.IsDevelopment() ? "Đã có lỗi xảy ra." : ex.Message),
                 Instance = context.Request.Path
             };
+
+            if (ex is FluentValidation.ValidationException validationEx)
+            {
+                problem.Extensions["errors"] = validationEx.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+            }
+
             problem.Extensions["traceId"] = context.TraceIdentifier;
 
             context.Response.Clear();
