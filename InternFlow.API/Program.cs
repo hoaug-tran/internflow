@@ -1,4 +1,5 @@
 using System.Text;
+using InternFlow.API.Conventions;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,7 +20,10 @@ try
         .Enrich.FromLogContext());
 
     // Add services to the container.
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+{
+    options.Conventions.Add(new ApiResponseConvention());
+});
     builder.Services.AddEndpointsApiExplorer();
 
     // Cấu hình Swagger với JWT Bearer Authorize
@@ -96,13 +100,13 @@ try
 
     // Pipeline Middlewares
     app.UseMiddleware<TraceIdMiddleware>();
-    app.UseSerilogRequestLogging();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseSerilogRequestLogging();
 
-    // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
+
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
@@ -111,7 +115,10 @@ try
 
     }
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
 
     app.UseAuthentication();
     app.UseAuthorization();

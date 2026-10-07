@@ -19,3 +19,7 @@ public class ConflictException : AppException
 {
     public ConflictException(string message) : base(message) { }
 }
+public class ForbiddenException : AppException
+{
+    public ForbiddenException(string message) : base(message) { }
+}
