@@ -62,6 +62,8 @@ try
             }
         });
         options.OperationFilter<InternFlow.API.Swagger.ErrorResponsesOperationFilter>();
+        foreach (var xml in Directory.GetFiles(AppContext.BaseDirectory, "InternFlow.*.xml"))
+            options.IncludeXmlComments(xml);
     });
 
     // 1. Cấu hình DbContext, MediatR, HealthChecks và các Service dự án
@@ -108,10 +110,6 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
         app.UseSwaggerUI(c =>
         {
 

@@ -8,8 +8,6 @@ using InternFlow.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace InternFlow.API.Extensions;
-
 /// <summary>
 /// Extension method đăng ký toàn bộ service của dự án.
 /// Trong Program.cs chỉ cần gọi: builder.Services.AddProjectServices(builder.Configuration)
@@ -51,7 +49,6 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
-<<<<<<< HEAD
         services.AddStackExchangeRedisCache(options =>
         {
             var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
@@ -62,10 +59,8 @@ public static class DependencyInjection
             options.ConfigurationOptions.AsyncTimeout = 1000;
         });
         services.AddSingleton<ICacheService, RedisCacheService>();
-=======
         services.AddScoped<IPagedQueryExecutor, PagedQueryExecutor>();
 
->>>>>>> origin/main
 
         // ─── 4. Health Checks ───────────────────────────────────────────────────
         services.AddHealthChecks()

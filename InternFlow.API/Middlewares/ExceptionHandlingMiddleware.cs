@@ -37,11 +37,8 @@ public class ExceptionHandlingMiddleware
                 BadRequestException => StatusCodes.Status400BadRequest,
                 ConflictException => StatusCodes.Status409Conflict,
                 ForbiddenException => StatusCodes.Status403Forbidden,
-<<<<<<< HEAD
                 EvaluationRuleException { Rule: EvaluationRule.Conflict } => StatusCodes.Status409Conflict,
                 EvaluationRuleException => StatusCodes.Status400BadRequest,
-=======
->>>>>>> origin/main
                 _ => StatusCodes.Status500InternalServerError
             };
 
