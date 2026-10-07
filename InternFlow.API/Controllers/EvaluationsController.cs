@@ -19,7 +19,7 @@ namespace InternFlow.API.Controllers;
 [ErrorResponses(403)] // áp dụng cho mọi action của controller
 public class EvaluationsController(IMediator mediator) : ControllerBase
 {
- 
+
 
     /// <summary>Tạo phiếu đánh giá (trạng thái Draft) cho một intern trong một kỳ.</summary>
     /// <remarks>

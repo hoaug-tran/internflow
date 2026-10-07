@@ -19,7 +19,10 @@ public class ConflictException : AppException
 {
     public ConflictException(string message) : base(message) { }
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 public class ForbiddenException : AppException
 {
     public ForbiddenException(string message) : base(message) { }

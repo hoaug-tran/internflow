@@ -1,6 +1,11 @@
+using FluentValidation;
+using InternFlow.Application.Common.Behaviors;
 using InternFlow.Application.Common.Interfaces;
+using InternFlow.Application.Features.Projects.Commands.CreateProject;
+using InternFlow.Application.Features.Projects.Queries.GetProjects;
 using InternFlow.Infrastructure.Data;
 using InternFlow.Infrastructure.Services;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.API.Extensions;
@@ -30,6 +35,15 @@ public static class DependencyInjection
         {
             cfg.RegisterServicesFromAssembly(typeof(IInternFlowDbContext).Assembly);
         });
+        // FluentValidation
+        services.AddValidatorsFromAssembly(
+            typeof(CreateProjectCommandValidator).Assembly,
+            includeInternalTypes: true);
+        services.AddAutoMapper(cfg => { }, typeof(CreateProjectCommandValidator).Assembly);
+        services.AddTransient(
+            typeof(IPipelineBehavior<,>),
+            typeof(ValidationBehavior<,>));
+
 
         // ─── 3. Application & Infrastructure Services ───────────────────────────
         services.AddHttpContextAccessor();
@@ -37,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+<<<<<<< HEAD
         services.AddStackExchangeRedisCache(options =>
         {
             var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
@@ -47,6 +62,10 @@ public static class DependencyInjection
             options.ConfigurationOptions.AsyncTimeout = 1000;
         });
         services.AddSingleton<ICacheService, RedisCacheService>();
+=======
+        services.AddScoped<IPagedQueryExecutor, PagedQueryExecutor>();
+
+>>>>>>> origin/main
 
         // ─── 4. Health Checks ───────────────────────────────────────────────────
         services.AddHealthChecks()

@@ -25,14 +25,23 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
+            if (context.Response.HasStarted)
+            {
+                _logger.LogError(ex, "Response đã bắt đầu gửi về client, không thể ghi ProblemDetails.");
+                throw;
+            }
+
             var status = ex switch
             {
                 NotFoundException => StatusCodes.Status404NotFound,
                 BadRequestException => StatusCodes.Status400BadRequest,
                 ConflictException => StatusCodes.Status409Conflict,
                 ForbiddenException => StatusCodes.Status403Forbidden,
+<<<<<<< HEAD
                 EvaluationRuleException { Rule: EvaluationRule.Conflict } => StatusCodes.Status409Conflict,
                 EvaluationRuleException => StatusCodes.Status400BadRequest,
+=======
+>>>>>>> origin/main
                 _ => StatusCodes.Status500InternalServerError
             };
 
@@ -40,8 +49,6 @@ public class ExceptionHandlingMiddleware
                 _logger.LogError(ex, "Unhandled exception");
             else
                 _logger.LogWarning("Handled exception ({Status}): {Message}", status, ex.Message);
-
-            if (context.Response.HasStarted) throw;
 
             var problem = new ProblemDetails
             {
@@ -54,7 +61,11 @@ public class ExceptionHandlingMiddleware
 
             context.Response.Clear();
             context.Response.StatusCode = status;
-            await context.Response.WriteAsJsonAsync(problem, (System.Text.Json.JsonSerializerOptions?)null,
+            context.Response.ContentType = "application/problem+json";
+
+            await context.Response.WriteAsJsonAsync(
+                problem,
+                (System.Text.Json.JsonSerializerOptions?)null,
                 "application/problem+json");
         }
     }

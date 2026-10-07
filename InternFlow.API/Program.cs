@@ -1,10 +1,9 @@
 using System.Text;
+using InternFlow.API.Conventions;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
-using InternFlow.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -21,7 +20,10 @@ try
         .Enrich.FromLogContext());
 
     // Add services to the container.
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+{
+    options.Conventions.Add(new ApiResponseConvention());
+});
     builder.Services.AddEndpointsApiExplorer();
 
     // Cấu hình Swagger với JWT Bearer Authorize
@@ -100,23 +102,28 @@ try
 
     // Pipeline Middlewares
     app.UseMiddleware<TraceIdMiddleware>();
-    app.UseSerilogRequestLogging();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseSerilogRequestLogging();
 
-    // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
         app.UseSwaggerUI(c =>
         {
-      
+
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "InternFlow API v1");
         });
-
         await app.MigrateAndSeedAsync();
     }
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
 
     app.UseAuthentication();
     app.UseAuthorization();
