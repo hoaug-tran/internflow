@@ -15,7 +15,7 @@ public class User : AuditableEntity
     public int FailedLoginCount { get; set; }
     public DateTime? LockoutEnd { get; set; }
     public DateTime? LastLoginAt { get; set; }
-    public byte[] RowVersion { get; set; } = null!;
+    public byte[] RowVersion { get; set; } = new byte[8];
 
     public InternProfile? InternProfile { get; set; }
     public MentorProfile? MentorProfile { get; set; }

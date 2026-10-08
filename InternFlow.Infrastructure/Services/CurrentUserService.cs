@@ -4,21 +4,40 @@ using Microsoft.AspNetCore.Http;
 
 namespace InternFlow.Infrastructure.Services;
 
-public class CurrentUserService(IHttpContextAccessor accessor) : ICurrentUserService
+public class CurrentUserService : ICurrentUserService
 {
-    private ClaimsPrincipal? User => accessor.HttpContext?.User;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
 
     public Guid? UserId
     {
         get
         {
-            var v = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? User?.FindFirstValue("sub");
-            return Guid.TryParse(v, out var id) ? id : null;
+            var idClaim = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                          ?? User?.FindFirst("sub")?.Value;
+
+            return Guid.TryParse(idClaim, out var userId) ? userId : null;
         }
     }
 
-    public string? Email => User?.FindFirstValue(ClaimTypes.Email);
-    public string? Role => User?.FindFirstValue(ClaimTypes.Role);
-    public bool IsAuthenticated => User?.Identity?.IsAuthenticated == true;
-    public bool IsInRole(string role) => User?.IsInRole(role) == true;
+    public string? Email => User?.FindFirst(ClaimTypes.Email)?.Value
+                            ?? User?.FindFirst("email")?.Value;
+
+    public string? Role => User?.FindFirst(ClaimTypes.Role)?.Value
+                           ?? User?.FindFirst("role")?.Value;
+
+    public bool IsAuthenticated => User?.Identity?.IsAuthenticated ?? false;
+
+    public bool IsInRole(string role)
+    {
+        if (User == null) return false;
+        return User.IsInRole(role) ||
+               string.Equals(Role, role, StringComparison.OrdinalIgnoreCase);
+    }
 }
