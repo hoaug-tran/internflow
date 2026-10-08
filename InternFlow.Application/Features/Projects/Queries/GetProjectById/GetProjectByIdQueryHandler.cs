@@ -26,40 +26,26 @@ public sealed class GetProjectByIdQueryHandler
         GetProjectByIdQuery req, CancellationToken ct)
     {
         var userId = _currentUser.EnsureAuthenticated();
-        var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
+        await _db.EnsureCanViewProjectAsync(
+            req.ProjectId, userId, _currentUser.Role, ct);
 
         var project = await _db.Projects
             .AsNoTracking()
             .Where(p => p.Id == req.ProjectId)
             .Select(p => new ProjectResponse(
-    p.Id,
-    p.InternshipId,
-    p.Name,
-    p.Description,
-    p.Status.ToString(),
-    p.StartDate,
-    p.EndDate,
-    p.CreatedBy,
-    p.CreatedAt,
-    p.UpdatedAt))
+                p.Id,
+                p.InternshipId,
+                p.Name,
+                p.Description,
+                p.Status.ToString(),
+                p.StartDate,
+                p.EndDate,
+                p.CreatedBy,
+                p.CreatedAt,
+                p.UpdatedAt))
             .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException(
                 $"Dự án {req.ProjectId} không tồn tại.");
-
-        // Check Admin hoặc member
-        if (!isAdmin)
-        {
-            var isMember = await _db.ProjectMembers
-                .AsNoTracking()
-                .AnyAsync(m => m.ProjectId == req.ProjectId
-                            && m.UserId == userId
-                            && m.RemovedAt == null, ct);
-
-            if (!isMember)
-                throw new NotFoundException(
-                    $"Dự án {req.ProjectId} không tồn tại.");
-        }
-
         return project;
     }
 }

@@ -7,10 +7,7 @@ using InternFlow.Infrastructure.Data;
 using InternFlow.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-<<<<<<< Updated upstream
-=======
 using StackExchange.Redis;
->>>>>>> Stashed changes
 
 /// <summary>
 /// Extension method đăng ký toàn bộ service của dự án.
@@ -53,27 +50,19 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
-<<<<<<< Updated upstream
         services.AddScoped<IReportQueryService, ReportQueryService>();
-        services.AddStackExchangeRedisCache(options =>
-        {
-            var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
-=======
 
         var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
         services.AddStackExchangeRedisCache(options =>
         {
 
->>>>>>> Stashed changes
-            options.ConfigurationOptions = StackExchange.Redis.ConfigurationOptions.Parse(redis);
+            options.ConfigurationOptions = ConfigurationOptions.Parse(redis);
             options.ConfigurationOptions.AbortOnConnectFail = false;
             options.ConfigurationOptions.ConnectTimeout = 1000;
             options.ConfigurationOptions.SyncTimeout = 1000;
             options.ConfigurationOptions.AsyncTimeout = 1000;
         });
-<<<<<<< Updated upstream
-        services.AddSingleton<ICacheService, RedisCacheService>();
-=======
+
         services.AddSingleton<IConnectionMultiplexer>(_ =>
         {
             var options = ConfigurationOptions.Parse(redis);
@@ -86,7 +75,6 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, RedisCacheService>();
         services.AddSingleton<ICacheKeyBuilder, DefaultCacheKeyBuilder>();
 
->>>>>>> Stashed changes
         services.AddScoped<IPagedQueryExecutor, PagedQueryExecutor>();
 
 

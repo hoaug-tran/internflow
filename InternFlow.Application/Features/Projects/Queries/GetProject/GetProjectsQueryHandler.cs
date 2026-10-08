@@ -30,18 +30,9 @@ public sealed class GetProjectsQueryHandler
         var userId = _currentUser.EnsureAuthenticated();
         var p = req.Parameters;
 
-        var query = _db.Projects.AsNoTracking();
-
-        query = _currentUser.Role switch
-        {
-            "Admin" => query,
-            "Mentor" => query.Where(x => x.CreatedBy == userId
-                || x.Members.Any(m => m.UserId == userId && m.RemovedAt == null)),
-            "Intern" => query.Where(x =>
-                x.Members.Any(m => m.UserId == userId && m.RemovedAt == null)),
-            _ => query.Where(_ => false)
-        };
-
+        var query = _db.Projects
+            .AsNoTracking()
+            .ApplyProjectVisibilityScope(userId, _currentUser.Role);
         // Filter
         if (p.InternshipId.HasValue)
             query = query.Where(x => x.InternshipId == p.InternshipId.Value);
