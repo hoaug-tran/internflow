@@ -30,7 +30,7 @@ public sealed class UpdateProjectCommandHandler
     public async Task<ProjectResponse> Handle(
         UpdateProjectCommand cmd, CancellationToken ct)
     {
-        var userId = _currentUser.EnsureAuthenticated();
+        var userId = _currentUser.EnsureRole(UserRole.Admin, UserRole.Mentor);
         var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
 
         var project = await _db.Projects
@@ -49,20 +49,7 @@ public sealed class UpdateProjectCommandHandler
 
             if (!isLead)
                 throw new ForbiddenException(
-                    "Chỉ Admin hoặc Lead của dự án mới được sửa.");
-        }
-
-        if (!string.Equals(project.Name, cmd.Request.Name, StringComparison.Ordinal))
-        {
-            var nameExists = await _db.Projects
-                .AsNoTracking()
-                .AnyAsync(p => p.InternshipId == project.InternshipId
-                            && p.Name == cmd.Request.Name
-                            && p.Id != project.Id, ct);
-
-            if (nameExists)
-                throw new ConflictException(
-                    $"Dự án '{cmd.Request.Name}' đã tồn tại trong đợt này.");
+                "Chỉ Admin hoặc Lead của dự án mới được sửa.");
         }
 
         _mapper.Map(cmd.Request, project);

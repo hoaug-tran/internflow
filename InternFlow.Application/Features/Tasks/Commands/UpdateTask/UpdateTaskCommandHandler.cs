@@ -1,7 +1,9 @@
 using AutoMapper;
+using InternFlow.Application.Common.Caching;
 using InternFlow.Application.Common.Extensions;
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Tasks.DTOs;
+using InternFlow.Application.Features.Tasks.Queries.GetTaskSummary;
 using InternFlow.Domain.Identity;
 using InternFlow.Shared.Exceptions;
 using MediatR;
@@ -15,15 +17,18 @@ public sealed class UpdateTaskCommandHandler
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
 
     public UpdateTaskCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
-        IMapper mapper)
+        IMapper mapper,
+        IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
+        _mediator = mediator;
     }
 
     public async Task<TaskResponse> Handle(
@@ -64,6 +69,9 @@ public sealed class UpdateTaskCommandHandler
         task.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);
+        await _mediator.Publish(
+            new CacheInvalidationNotification(
+                CacheKeys.ForProject<GetTaskSummaryQuery>(task.ProjectId)), ct);
 
         // Load lại với Assignee để map response
         var updatedTask = await _db.Tasks

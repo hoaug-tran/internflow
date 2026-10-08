@@ -1,7 +1,9 @@
 using AutoMapper;
+using InternFlow.Application.Common.Caching;
 using InternFlow.Application.Common.Extensions;
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Projects.DTOs;
+using InternFlow.Application.Features.Tasks.Queries.GetTaskSummary;
 using InternFlow.Domain.Identity;
 using InternFlow.Domain.Projects;
 using InternFlow.Shared.Exceptions;
@@ -16,17 +18,20 @@ public sealed class AddProjectMemberCommandHandler
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
     private readonly IInternshipQueryService _internshipQuery;
 
     public AddProjectMemberCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
         IMapper mapper,
+        IMediator mediator,
         IInternshipQueryService internshipQuery)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
+        _mediator = mediator;
         _internshipQuery = internshipQuery;
     }
 
@@ -52,7 +57,7 @@ public sealed class AddProjectMemberCommandHandler
                             && m.RemovedAt == null, ct);
 
             if (!isLead)
-                throw new ForbiddenException(
+                throw new NotFoundException(
                     "Chỉ Admin hoặc Lead của dự án mới thêm thành viên.");
         }
         var targetUser = await _db.Users
@@ -61,23 +66,20 @@ public sealed class AddProjectMemberCommandHandler
             ?? throw new NotFoundException(
                 $"User {cmd.Request.UserId} không tồn tại.");
 
-        if (targetUser.Role.ToString() != nameof(UserRole.Intern)
-            && targetUser.Role.ToString() != nameof(UserRole.Mentor))
+        if (targetUser.Role != UserRole.Intern && targetUser.Role != UserRole.Mentor)
         {
             throw new ConflictException(
                 "Chỉ Intern hoặc Mentor được thêm vào dự án.");
         }
-        //Nếu là intern thì kiểm tra cùng đợt
-        if (targetUser.Role.ToString() == nameof(UserRole.Intern))
+
+        if (targetUser.Role == UserRole.Intern)
         {
             var inBatch = await _internshipQuery.IsInternInBatchAsync(
                 cmd.Request.UserId, project.InternshipId, ct);
 
             if (!inBatch)
-                throw new ConflictException(
-                    "Intern không thuộc đợt thực tập của dự án.");
+                throw new ConflictException("Intern không thuộc đợt thực tập của dự án.");
 
-            //Nếu là Mentor -> check có đang phụ trách intern không
             if (!isAdmin)
             {
                 var isMentorOfIntern = await _internshipQuery
@@ -88,6 +90,12 @@ public sealed class AddProjectMemberCommandHandler
                     throw new ForbiddenException(
                         "Mentor chỉ được thêm intern mình phụ trách.");
             }
+        }
+        else if (targetUser.Role == UserRole.Mentor)
+        {
+            if (!isAdmin)
+                throw new ForbiddenException(
+                    "Chỉ Admin được thêm Mentor vào dự án.");
         }
 
         // Chặn trùng member active
@@ -119,12 +127,16 @@ public sealed class AddProjectMemberCommandHandler
         }
 
         await _db.SaveChangesAsync(ct);
+        await _mediator.Publish(
+            new CacheInvalidationNotification(
+                CacheKeys.ForProject<GetTaskSummaryQuery>(cmd.ProjectId)),
+            ct);
 
         var createdMember = await _db.ProjectMembers
-    .Include(m => m.User)
-    .AsNoTracking()
-    .FirstAsync(m => m.ProjectId == cmd.ProjectId
-                  && m.UserId == cmd.Request.UserId, ct);
+        .Include(m => m.User)
+        .AsNoTracking()
+        .FirstAsync(m => m.ProjectId == cmd.ProjectId
+                    && m.UserId == cmd.Request.UserId, ct);
 
         return _mapper.Map<ProjectMemberResponse>(createdMember);
     }

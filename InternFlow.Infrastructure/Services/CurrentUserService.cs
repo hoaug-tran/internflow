@@ -4,40 +4,36 @@ using Microsoft.AspNetCore.Http;
 
 namespace InternFlow.Infrastructure.Services;
 
-public class CurrentUserService : ICurrentUserService
+public class CurrentUserService(IHttpContextAccessor accessor) : ICurrentUserService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
-    private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
+    private ClaimsPrincipal? User => accessor.HttpContext?.User;
 
     public Guid? UserId
     {
         get
         {
-            var idClaim = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                          ?? User?.FindFirst("sub")?.Value;
+            var v = User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.FindFirstValue("sub");
 
-            return Guid.TryParse(idClaim, out var userId) ? userId : null;
+            return Guid.TryParse(v, out var id) ? id : null;
         }
     }
 
-    public string? Email => User?.FindFirst(ClaimTypes.Email)?.Value
-                            ?? User?.FindFirst("email")?.Value;
+    public string? Email =>
+        User?.FindFirstValue(ClaimTypes.Email)
+        ?? User?.FindFirstValue("email");
 
-    public string? Role => User?.FindFirst(ClaimTypes.Role)?.Value
-                           ?? User?.FindFirst("role")?.Value;
+    public string? Role =>
+        User?.FindFirstValue(ClaimTypes.Role)
+        ?? User?.FindFirstValue("role");
 
-    public bool IsAuthenticated => User?.Identity?.IsAuthenticated ?? false;
+    public bool IsAuthenticated => User?.Identity?.IsAuthenticated == true;
 
     public bool IsInRole(string role)
     {
-        if (User == null) return false;
-        return User.IsInRole(role) ||
-               string.Equals(Role, role, StringComparison.OrdinalIgnoreCase);
+        if (User is null) return false;
+
+        return User.IsInRole(role)
+            || string.Equals(Role, role, StringComparison.OrdinalIgnoreCase);
     }
 }
