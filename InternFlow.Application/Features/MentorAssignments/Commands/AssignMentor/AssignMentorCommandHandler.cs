@@ -9,10 +9,16 @@ namespace InternFlow.Application.Features.MentorAssignments.Commands.AssignMento
 public class AssignMentorCommandHandler : IRequestHandler<AssignMentorCommand, ApiResponse<long>>
 {
     private readonly IInternFlowDbContext _context;
+    private readonly ICurrentUserService? _currentUserService;
 
-    public AssignMentorCommandHandler(IInternFlowDbContext context)
+    public AssignMentorCommandHandler(IInternFlowDbContext context) : this(context, null)
+    {
+    }
+
+    public AssignMentorCommandHandler(IInternFlowDbContext context, ICurrentUserService? currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<long>> Handle(AssignMentorCommand request, CancellationToken cancellationToken)
@@ -81,13 +87,15 @@ public class AssignMentorCommandHandler : IRequestHandler<AssignMentorCommand, A
             currentAssignment.EndReason = "Chuyển giao sang Mentor mới (Reassigned)";
         }
 
+        var assignedBy = request.AssignedBy ?? _currentUserService?.UserId ?? Guid.Empty;
+
         // 5. Tạo phân công mới
         var newAssignment = new MentorAssignment
         {
             InternshipId = request.InternshipId,
             InternId = request.InternId,
             MentorId = request.MentorId,
-            AssignedBy = request.AssignedBy,
+            AssignedBy = assignedBy,
             AssignedAt = DateTime.UtcNow
         };
 

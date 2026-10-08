@@ -7,5 +7,5 @@ public record AssignMentorCommand(
     Guid InternshipId,
     Guid InternId,
     Guid MentorId,
-    Guid AssignedBy
+    Guid? AssignedBy = null
 ) : IRequest<ApiResponse<long>>;
