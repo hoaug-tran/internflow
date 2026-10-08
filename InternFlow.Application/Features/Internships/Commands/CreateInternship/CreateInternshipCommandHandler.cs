@@ -10,10 +10,16 @@ namespace InternFlow.Application.Features.Internships.Commands.CreateInternship;
 public class CreateInternshipCommandHandler : IRequestHandler<CreateInternshipCommand, ApiResponse<InternshipDto>>
 {
     private readonly IInternFlowDbContext _context;
+    private readonly ICurrentUserService? _currentUserService;
 
-    public CreateInternshipCommandHandler(IInternFlowDbContext context)
+    public CreateInternshipCommandHandler(IInternFlowDbContext context) : this(context, null)
+    {
+    }
+
+    public CreateInternshipCommandHandler(IInternFlowDbContext context, ICurrentUserService? currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<InternshipDto>> Handle(CreateInternshipCommand request, CancellationToken cancellationToken)
@@ -37,6 +43,8 @@ public class CreateInternshipCommandHandler : IRequestHandler<CreateInternshipCo
             return ApiResponse<InternshipDto>.Fail($"Đợt thực tập có tên '{normalizedName}' đã tồn tại trong hệ thống.");
         }
 
+        var creatorId = request.CreatedBy ?? _currentUserService?.UserId ?? Guid.Empty;
+
         var internship = new Internship
         {
             Id = Guid.NewGuid(),
@@ -44,7 +52,7 @@ public class CreateInternshipCommandHandler : IRequestHandler<CreateInternshipCo
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             Status = InternshipStatus.Planned,
-            CreatedBy = request.CreatedBy,
+            CreatedBy = creatorId,
             CreatedAt = DateTime.UtcNow
         };
 

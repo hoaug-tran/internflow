@@ -4,4 +4,4 @@ using MediatR;
 
 namespace InternFlow.Application.Features.Auth.Queries.GetCurrentUser;
 
-public record GetCurrentUserQuery(Guid UserId) : IRequest<ApiResponse<UserInfoResponse>>;
+public record GetCurrentUserQuery(Guid? UserId = null) : IRequest<ApiResponse<UserInfoResponse>>;

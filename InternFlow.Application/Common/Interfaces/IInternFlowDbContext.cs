@@ -1,3 +1,4 @@
+using InternFlow.Domain.Evaluations;
 using InternFlow.Domain.Identity;
 using InternFlow.Domain.Internships;
 using InternFlow.Domain.Projects;
@@ -19,6 +20,11 @@ public interface IInternFlowDbContext
     DbSet<ProjectMember> ProjectMembers { get; }
     DbSet<TaskItem> Tasks { get; }
     DbSet<WorkLog> WorkLogs { get; }
+
+    DbSet<EvaluationPeriod> EvaluationPeriods { get; }
+    DbSet<Criterion> Criteria { get; }
+    DbSet<Evaluation> Evaluations { get; }
+    DbSet<EvaluationDetail> EvaluationDetails { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
