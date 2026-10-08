@@ -1,4 +1,4 @@
-using InternFlow.API.Extensions;
+using InternFlow.API.Controllers.Conventions;
 using InternFlow.Application.Features.Internships.Commands.AddBatchIntern;
 using InternFlow.Application.Features.Internships.Commands.AddBatchMentor;
 using InternFlow.Application.Features.Internships.Commands.CreateInternship;
@@ -13,78 +13,50 @@ using InternFlow.Application.Features.MentorAssignments.DTOs;
 using InternFlow.Application.Features.MentorAssignments.Queries.GetMentorAssignments;
 using InternFlow.Domain.Internships;
 using InternFlow.Shared.Common;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InternFlow.API.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class InternshipsController : ControllerBase
+public class InternshipsController : ApiControllerBase
 {
-    private readonly ISender _sender;
-
-    public InternshipsController(ISender sender)
-    {
-        _sender = sender;
-    }
-
     /// <summary>
     /// Tạo mới một kỳ thực tập (Chỉ Admin)
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(ApiResponse<InternshipDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<InternshipDto>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] CreateInternshipRequest request)
+    public async Task<ApiResponse<InternshipDto>> Create(
+        [FromBody] CreateInternshipRequest request,
+        CancellationToken ct)
     {
-        var currentUserId = User.GetUserId() ?? Guid.Empty;
-        var command = new CreateInternshipCommand(request.Name, request.StartDate, request.EndDate, currentUserId);
-        var result = await _sender.Send(command);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new CreateInternshipCommand(request.Name, request.StartDate, request.EndDate), ct);
     }
 
     /// <summary>
     /// Lấy danh sách kỳ thực tập (Hỗ trợ lọc theo Status và tìm kiếm theo Tên)
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<List<InternshipDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll(
+    public async Task<ApiResponse<List<InternshipDto>>> GetAll(
         [FromQuery] InternshipStatus? status,
         [FromQuery] string? search,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken ct = default)
     {
-        var query = new GetInternshipsQuery(status, search, page, pageSize);
-        var result = await _sender.Send(query);
-        return Ok(result);
+        return await Sender.Send(new GetInternshipsQuery(status, search, page, pageSize), ct);
     }
 
     /// <summary>
     /// Xem chi tiết một kỳ thực tập kèm danh sách Mentors và Interns
     /// </summary>
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(ApiResponse<InternshipDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<InternshipDetailDto>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    public async Task<ApiResponse<InternshipDetailDto>> GetById(
+        [FromRoute] Guid id,
+        CancellationToken ct)
     {
-        var query = new GetInternshipByIdQuery(id);
-        var result = await _sender.Send(query);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new GetInternshipByIdQuery(id), ct);
     }
 
     /// <summary>
@@ -92,21 +64,12 @@ public class InternshipsController : ControllerBase
     /// </summary>
     [HttpPut("{id:guid}/status")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UpdateStatus(
+    public async Task<ApiResponse<bool>> UpdateStatus(
         [FromRoute] Guid id,
-        [FromBody] UpdateInternshipStatusRequest request)
+        [FromBody] UpdateInternshipStatusRequest request,
+        CancellationToken ct)
     {
-        var command = new UpdateInternshipStatusCommand(id, request.NewStatus);
-        var result = await _sender.Send(command);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new UpdateInternshipStatusCommand(id, request.NewStatus), ct);
     }
 
     /// <summary>
@@ -114,22 +77,12 @@ public class InternshipsController : ControllerBase
     /// </summary>
     [HttpPost("{id:guid}/mentors")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddMentor(
+    public async Task<ApiResponse<bool>> AddMentor(
         [FromRoute] Guid id,
-        [FromBody] AddBatchMentorRequest request)
+        [FromBody] AddBatchMentorRequest request,
+        CancellationToken ct)
     {
-        var currentUserId = User.GetUserId() ?? Guid.Empty;
-        var command = new AddBatchMentorCommand(id, request.MentorId, currentUserId);
-        var result = await _sender.Send(command);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new AddBatchMentorCommand(id, request.MentorId), ct);
     }
 
     /// <summary>
@@ -137,22 +90,12 @@ public class InternshipsController : ControllerBase
     /// </summary>
     [HttpPost("{id:guid}/interns")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddIntern(
+    public async Task<ApiResponse<bool>> AddIntern(
         [FromRoute] Guid id,
-        [FromBody] AddBatchInternRequest request)
+        [FromBody] AddBatchInternRequest request,
+        CancellationToken ct)
     {
-        var currentUserId = User.GetUserId() ?? Guid.Empty;
-        var command = new AddBatchInternCommand(id, request.InternId, currentUserId, request.Notes);
-        var result = await _sender.Send(command);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new AddBatchInternCommand(id, request.InternId, Notes: request.Notes), ct);
     }
 
     /// <summary>
@@ -160,22 +103,13 @@ public class InternshipsController : ControllerBase
     /// </summary>
     [HttpPut("{id:guid}/interns/{internId:guid}/status")]
     [Authorize(Roles = "Admin,Mentor")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UpdateInternStatus(
+    public async Task<ApiResponse<bool>> UpdateInternStatus(
         [FromRoute] Guid id,
         [FromRoute] Guid internId,
-        [FromBody] UpdateBatchInternStatusRequest request)
+        [FromBody] UpdateBatchInternStatusRequest request,
+        CancellationToken ct)
     {
-        var command = new UpdateBatchInternStatusCommand(id, internId, request.NewStatus);
-        var result = await _sender.Send(command);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new UpdateBatchInternStatusCommand(id, internId, request.NewStatus), ct);
     }
 
     /// <summary>
@@ -183,22 +117,12 @@ public class InternshipsController : ControllerBase
     /// </summary>
     [HttpPost("{id:guid}/assignments")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(ApiResponse<long>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<long>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AssignMentor(
+    public async Task<ApiResponse<long>> AssignMentor(
         [FromRoute] Guid id,
-        [FromBody] AssignMentorRequest request)
+        [FromBody] AssignMentorRequest request,
+        CancellationToken ct)
     {
-        var currentUserId = User.GetUserId() ?? Guid.Empty;
-        var command = new AssignMentorCommand(id, request.InternId, request.MentorId, currentUserId);
-        var result = await _sender.Send(command);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new AssignMentorCommand(id, request.InternId, request.MentorId), ct);
     }
 
     /// <summary>
@@ -206,37 +130,26 @@ public class InternshipsController : ControllerBase
     /// </summary>
     [HttpPut("{id:guid}/assignments/{assignmentId:long}/end")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> EndAssignment(
+    public async Task<ApiResponse<bool>> EndAssignment(
         [FromRoute] Guid id,
         [FromRoute] long assignmentId,
-        [FromBody] EndMentorAssignmentRequest? request)
+        [FromBody] EndMentorAssignmentRequest? request,
+        CancellationToken ct)
     {
-        var command = new EndMentorAssignmentCommand(assignmentId, request?.EndReason);
-        var result = await _sender.Send(command);
-
-        if (!result.Success)
-        {
-            return BadRequest(result);
-        }
-
-        return Ok(result);
+        return await Sender.Send(new EndMentorAssignmentCommand(assignmentId, request?.EndReason), ct);
     }
 
     /// <summary>
     /// Lấy danh sách phân công Mentor trong kỳ thực tập
     /// </summary>
     [HttpGet("{id:guid}/assignments")]
-    [ProducesResponseType(typeof(ApiResponse<List<MentorAssignmentDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAssignments(
+    public async Task<ApiResponse<List<MentorAssignmentDto>>> GetAssignments(
         [FromRoute] Guid id,
         [FromQuery] Guid? mentorId,
         [FromQuery] Guid? internId,
-        [FromQuery] bool onlyCurrent = false)
+        [FromQuery] bool onlyCurrent = false,
+        CancellationToken ct = default)
     {
-        var query = new GetMentorAssignmentsQuery(id, mentorId, internId, onlyCurrent);
-        var result = await _sender.Send(query);
-        return Ok(result);
+        return await Sender.Send(new GetMentorAssignmentsQuery(id, mentorId, internId, onlyCurrent), ct);
     }
 }
