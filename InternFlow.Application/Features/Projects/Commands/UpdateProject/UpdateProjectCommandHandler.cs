@@ -2,6 +2,7 @@ using AutoMapper;
 using InternFlow.Application.Common.Extensions;
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Projects.DTOs;
+using InternFlow.Shared.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,20 @@ public sealed class UpdateProjectCommandHandler
 
         var project = await _db.Projects
             .FirstAsync(p => p.Id == cmd.ProjectId, ct);
+        // Check trùng tên (chỉ khi đổi tên)
+        if (!string.Equals(project.Name, cmd.Request.Name,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            var nameExists = await _db.Projects
+                .AsNoTracking()
+                .AnyAsync(p => p.InternshipId == project.InternshipId
+                            && p.Name == cmd.Request.Name
+                            && p.Id != project.Id, ct);
+
+            if (nameExists)
+                throw new ConflictException(
+                    $"Dự án '{cmd.Request.Name}' đã tồn tại trong đợt này.");
+        }
 
         _mapper.Map(cmd.Request, project);
         project.UpdatedAt = DateTime.UtcNow;

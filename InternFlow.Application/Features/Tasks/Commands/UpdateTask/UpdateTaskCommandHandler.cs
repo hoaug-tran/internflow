@@ -43,7 +43,7 @@ public sealed class UpdateTaskCommandHandler
             ?? throw new NotFoundException(
                 $"Task {cmd.TaskId} không tồn tại.");
 
-        await _db.EnsureCanViewProjectAsync(
+        await _db.EnsureCanManageProjectAsync(
             task.ProjectId, userId, _currentUser.Role, ct);
 
         // Nếu đổi assignee -> validate assignee mới

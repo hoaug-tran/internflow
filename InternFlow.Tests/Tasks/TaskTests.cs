@@ -879,7 +879,7 @@ public class TaskTests
     }
 
     [Fact]
-    public async Task Update_NonMemberMentor_ThrowsNotFound()
+    public async Task Update_NonMemberMentor_ThrowsForbidden()
     {
         // Arrange — Mentor không thuộc project
         await using var db = TestDbContextFactory.Create();
@@ -902,7 +902,7 @@ public class TaskTests
             "Task", null, TaskPriority.Medium, null, internId);
 
         // Act + Assert
-        await Assert.ThrowsAsync<NotFoundException>(() =>
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.Handle(new UpdateTaskCommand(taskId, request),
                 CancellationToken.None));
     }
