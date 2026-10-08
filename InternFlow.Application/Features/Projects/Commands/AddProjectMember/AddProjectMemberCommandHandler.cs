@@ -38,28 +38,16 @@ public sealed class AddProjectMemberCommandHandler
     public async Task<ProjectMemberResponse> Handle(
         AddProjectMemberCommand cmd, CancellationToken ct)
     {
-        var userId = _currentUser.EnsureRole(UserRole.Admin, UserRole.Mentor);
+        var userId = _currentUser.EnsureAuthenticated();
         var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
+
+        await _db.EnsureCanManageProjectAsync(
+            cmd.ProjectId, userId, _currentUser.Role, ct);
 
         var project = await _db.Projects
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == cmd.ProjectId, ct)
-            ?? throw new NotFoundException(
-                $"Dự án {cmd.ProjectId} không tồn tại.");
-        // Chỉ Admin hoặc Lead của dự án mới thêm member
-        if (!isAdmin)
-        {
-            var isLead = await _db.ProjectMembers
-                .AsNoTracking()
-                .AnyAsync(m => m.ProjectId == cmd.ProjectId
-                            && m.UserId == userId
-                            && m.Role == MemberRole.Lead
-                            && m.RemovedAt == null, ct);
+            .FirstAsync(p => p.Id == cmd.ProjectId, ct);
 
-            if (!isLead)
-                throw new NotFoundException(
-                    "Chỉ Admin hoặc Lead của dự án mới thêm thành viên.");
-        }
         var targetUser = await _db.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == cmd.Request.UserId, ct)

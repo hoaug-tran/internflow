@@ -34,8 +34,7 @@ public sealed class UpdateTaskCommandHandler
     public async Task<TaskResponse> Handle(
         UpdateTaskCommand cmd, CancellationToken ct)
     {
-        var userId = _currentUser.EnsureRole(UserRole.Admin, UserRole.Mentor);
-        var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
+        var userId = _currentUser.EnsureAuthenticated();
 
         // Load task with Project
         var task = await _db.Tasks
@@ -44,27 +43,17 @@ public sealed class UpdateTaskCommandHandler
             ?? throw new NotFoundException(
                 $"Task {cmd.TaskId} không tồn tại.");
 
-        if (!isAdmin)
-        {
-            var inProject = task.Project.CreatedBy == userId
-                || await _db.ProjectMembers.AnyAsync(m =>
-                    m.ProjectId == task.ProjectId
-                    && m.UserId == userId
-                    && m.RemovedAt == null, ct);
+        await _db.EnsureCanViewProjectAsync(
+            task.ProjectId, userId, _currentUser.Role, ct);
 
-            if (!inProject)
-                throw new NotFoundException(
-                    $"Task {cmd.TaskId} không tồn tại.");
-        }
-
-        // 4. Nếu đổi assignee → validate assignee mới
+        // Nếu đổi assignee -> validate assignee mới
         if (task.AssigneeId != cmd.Request.AssigneeId)
         {
             await EnsureValidAssigneeAsync(
                 cmd.Request.AssigneeId, task.ProjectId, ct);
         }
 
-        // 5. Update fields — AutoMapper (skip ProjectId, Status)
+        // Update fields — AutoMapper (skip ProjectId, Status)
         _mapper.Map(cmd.Request, task);
         task.UpdatedAt = DateTime.UtcNow;
 
@@ -100,7 +89,6 @@ public sealed class UpdateTaskCommandHandler
         if (!assignee.IsActive)
             throw new ConflictException("Intern đã bị vô hiệu hóa.");
 
-        // Assignee phải là member active của project
         var isMember = await _db.ProjectMembers
             .AsNoTracking()
             .AnyAsync(m => m.ProjectId == projectId
