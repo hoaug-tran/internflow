@@ -26,14 +26,7 @@ public class ProjectsController : ApiControllerBase
     /// <summary>Tạo dự án mới trong một đợt thực tập.</summary>
     /// <remarks>
     /// **Phân quyền:** Admin hoặc Mentor.
-    ///
-    /// **Cache:** Không ảnh hưởng cache (chưa cache danh sách dự án).
     /// </remarks>
-    /// <response code="200">Tạo thành công.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Không phải Admin/Mentor.</response>
-    /// <response code="404">Đợt thực tập không tồn tại hoặc không Active.</response>
-    /// <response code="409">Tên dự án đã tồn tại trong đợt.</response>
     [HttpPost]
     public async Task<ApiResponse<ProjectResponse>> Create(
         [FromBody] CreateProjectRequest request,
@@ -51,11 +44,7 @@ public class ProjectsController : ApiControllerBase
     /// - **Admin:** thấy tất cả dự án.
     /// - **Mentor:** chỉ thấy dự án mình tạo hoặc là thành viên.
     /// - **Intern:** chỉ thấy dự án mình là member.
-    ///
-    /// **Cache:** Không cache — filter/paging tự do + per-user scope → vô số key.
     /// </remarks>
-    /// <response code="200">Danh sách dự án.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
     [HttpGet]
     public async Task<ApiResponse<PagedResult<ProjectListItemResponse>>> GetList(
         [FromQuery] ProjectQueryParameters parameters,
@@ -70,18 +59,7 @@ public class ProjectsController : ApiControllerBase
     /// <summary>Cập nhật thông tin dự án.</summary>
     /// <remarks>
     /// **Phân quyền:** Admin hoặc Lead của dự án.
-    ///
-    /// **Ràng buộc:**
-    /// - Dự án phải tồn tại (404 nếu không, hoặc nếu không có quyền — ẩn sự tồn tại).
-    /// - Tên mới không được trùng với dự án khác trong cùng đợt (409).
-    ///
-    /// **Cache:** Không ảnh hưởng cache.
     /// </remarks>
-    /// <response code="200">Cập nhật thành công.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Không phải Admin/Lead.</response>
-    /// <response code="404">Dự án không tồn tại hoặc không có quyền.</response>
-    /// <response code="409">Tên dự án trùng.</response>
     [HttpPut("{id:guid}")]
     public async Task<ApiResponse<ProjectResponse>> Update(
         Guid id,
@@ -109,11 +87,6 @@ public class ProjectsController : ApiControllerBase
     /// - `project:members:{projectId}` — danh sách member thay đổi.
     /// - `task:summary:project:{projectId}` — summary có `ByAssignee` thay đổi.
     /// </remarks>
-    /// <response code="200">Thêm thành công.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Không phải Admin/Lead.</response>
-    /// <response code="404">Dự án hoặc user không tồn tại.</response>
-    /// <response code="409">User đã là member / sai role / khác đợt.</response>
     [HttpPost("{id:guid}/members")]
     public async Task<ApiResponse<ProjectMemberResponse>> AddMember(
         Guid id,

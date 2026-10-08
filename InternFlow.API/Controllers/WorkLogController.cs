@@ -34,12 +34,6 @@ public class WorkLogsController : ApiControllerBase
     /// **Cache:** không ảnh hưởng cache hiện tại (report workload chưa làm).
     /// Khi làm report → invalidate `report:workload:{internshipId}`.
     /// </remarks>
-    /// <response code="200">Ghi nhật ký thành công.</response>
-    /// <response code="400">WorkDate tương lai.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Không phải Intern / task không thuộc mình.</response>
-    /// <response code="404">Task không tồn tại.</response>
-    /// <response code="409">Vi phạm rule (task Todo/Cancelled, quá 12h, trùng ngày, ...).</response>
     [HttpPost]
     public async Task<ApiResponse<WorkLogResponse>> Create(
         [FromBody] CreateWorkLogRequest request,
@@ -59,11 +53,6 @@ public class WorkLogsController : ApiControllerBase
     ///
     /// **Cache:** không ảnh hưởng cache hiện tại.
     /// </remarks>
-    /// <response code="200">Cập nhật thành công.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Không phải owner.</response>
-    /// <response code="404">Worklog không tồn tại.</response>
-    /// <response code="409">Quá 7 ngày / vi phạm rule.</response>
     [HttpPatch("{id:guid}")]
     public async Task<ApiResponse<WorkLogResponse>> Update(
         Guid id,
@@ -84,11 +73,7 @@ public class WorkLogsController : ApiControllerBase
     /// **Filter hỗ trợ:**
     /// - `TaskItemId`, `ProjectId`, `UserId`, `From`, `To`.
     /// - Phân trang bắt buộc.
-    ///
-    /// **Cache:** Không cache — filter tự do + per-user scope (mentor có list intern động).
     /// </remarks>
-    /// <response code="200">Danh sách nhật ký phân trang.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
     [HttpGet]
     public async Task<ApiResponse<PagedResult<WorkLogListItemResponse>>> GetList(
         [FromQuery] WorkLogQueryParameters parameters,

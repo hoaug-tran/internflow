@@ -32,11 +32,6 @@ public class TasksController : ApiControllerBase
     /// **Cache invalidate:**
     /// - `task:summary:project:{projectId}` — task mới xuất hiện trong summary.
     /// </remarks>
-    /// <response code="200">Tạo task thành công.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Không phải Admin/Lead.</response>
-    /// <response code="404">Dự án hoặc user không tồn tại.</response>
-    /// <response code="409">Assignee sai role / không phải member / khác đợt.</response>
     [HttpPost("projects/{id:guid}/tasks")]
     public async Task<ApiResponse<TaskResponse>> Create(
         Guid id,
@@ -67,11 +62,6 @@ public class TasksController : ApiControllerBase
     /// **Cache invalidate:**
     /// - `task:summary:project:{projectId}` — status thay đổi → summary thay đổi.
     /// </remarks>
-    /// <response code="200">Chuyển thành công.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Sai role với transition.</response>
-    /// <response code="404">Task không tồn tại hoặc ngoài scope.</response>
-    /// <response code="409">Chuyển sai luồng trạng thái.</response>
     [HttpPatch("tasks/{id:guid}/status")]
     public async Task<ApiResponse<TaskResponse>> ChangeStatus(
         Guid id,
@@ -98,8 +88,6 @@ public class TasksController : ApiControllerBase
     ///
     /// **Cache:** Không cache — filter/paging tự do + per-user scope → vô số key.
     /// </remarks>
-    /// <response code="200">Danh sách task phân trang.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
     [HttpGet("tasks")]
     public async Task<ApiResponse<PagedResult<TaskListItemResponse>>> GetList(
         [FromQuery] TaskQueryParameters parameters,
@@ -121,9 +109,6 @@ public class TasksController : ApiControllerBase
     ///
     /// **Cache:** Không cache — detail đọc-ghi liên tục.
     /// </remarks>
-    /// <response code="200">Chi tiết task.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="404">Task không tồn tại hoặc ngoài scope.</response>
     [HttpGet("tasks/{id:guid}")]
     public async Task<ApiResponse<TaskResponse>> GetById(
         Guid id,
@@ -146,11 +131,6 @@ public class TasksController : ApiControllerBase
     /// **Cache invalidate:**
     /// - `task:summary:project:{projectId}` — title/assignee/priority/dueDate đổi → summary đổi.
     /// </remarks>
-    /// <response code="200">Cập nhật thành công.</response>
-    /// <response code="401">Chưa đăng nhập.</response>
-    /// <response code="403">Không phải Admin/Mentor.</response>
-    /// <response code="404">Task hoặc assignee mới không tồn tại.</response>
-    /// <response code="409">Assignee mới sai role / không phải member.</response>
     [HttpPatch("tasks/{id:guid}")]
     public async Task<ApiResponse<TaskResponse>> Update(
         Guid id,
