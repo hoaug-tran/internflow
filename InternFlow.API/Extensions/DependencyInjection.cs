@@ -49,6 +49,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+        services.AddScoped<IReportQueryService, ReportQueryService>();
         services.AddStackExchangeRedisCache(options =>
         {
             var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";

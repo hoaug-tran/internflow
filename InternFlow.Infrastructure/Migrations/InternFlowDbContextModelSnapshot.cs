@@ -113,7 +113,7 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasIndex("InternId");
 
-                    b.HasIndex("EvaluationPeriodId", "InternId", "EvaluatorId")
+                    b.HasIndex("EvaluationPeriodId", "InternId")
                         .IsUnique();
 
                     b.ToTable("Evaluations", "dbo");
@@ -872,8 +872,6 @@ namespace InternFlow.Infrastructure.Migrations
 
                     b.HasIndex("ProjectId", "CreatedAt");
 
-                    b.HasIndex("CreatedBy");
-
                     b.HasIndex("ProjectId", "Status");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("ProjectId", "Status"), new[] { "AssigneeId", "Priority", "DueDate" });
@@ -913,12 +911,6 @@ namespace InternFlow.Infrastructure.Migrations
                     b.Property<decimal>("Hours")
                         .HasPrecision(4, 2)
                         .HasColumnType("decimal(4,2)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
