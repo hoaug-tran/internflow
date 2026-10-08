@@ -1,6 +1,6 @@
 using InternFlow.Shared.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-
+using InternFlow.Domain.Evaluations;
 namespace InternFlow.API.Middlewares;
 
 public class ExceptionHandlingMiddleware
@@ -38,6 +38,8 @@ public class ExceptionHandlingMiddleware
                 BadRequestException => StatusCodes.Status400BadRequest,
                 ConflictException => StatusCodes.Status409Conflict,
                 ForbiddenException => StatusCodes.Status403Forbidden,
+                EvaluationRuleException { Rule: EvaluationRule.Conflict } => StatusCodes.Status409Conflict,
+                EvaluationRuleException => StatusCodes.Status400BadRequest,
                 _ => StatusCodes.Status500InternalServerError
             };
 
