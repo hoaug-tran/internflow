@@ -6,5 +6,5 @@ namespace InternFlow.Application.Features.Internships.Commands.AddBatchMentor;
 public record AddBatchMentorCommand(
     Guid InternshipId,
     Guid MentorId,
-    Guid AddedBy
+    Guid? AddedBy = null
 ) : IRequest<ApiResponse<bool>>;

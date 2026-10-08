@@ -15,7 +15,7 @@ public class InternshipQueryService : IInternshipQueryService
     }
 
     /// <summary>
-    /// Phục vụ cho Quang: Đảm bảo Mentor A đang thực sự hướng dẫn Intern B trong đợt (EndedAt IS NULL)
+    /// Đảm bảo Mentor A đang thực sự hướng dẫn Intern B trong đợt (EndedAt IS NULL)
     /// </summary>
     public async Task<bool> IsMentorAssignedToInternAsync(
         Guid mentorId,
@@ -32,7 +32,7 @@ public class InternshipQueryService : IInternshipQueryService
     }
 
     /// <summary>
-    /// Phục vụ cho Tú: Đảm bảo Intern được giao task đã tham gia vào đợt thực tập này
+    ///  Đảm bảo Intern được giao task đã tham gia vào đợt thực tập này
     /// </summary>
     public async Task<bool> IsInternInBatchAsync(
         Guid internId,
