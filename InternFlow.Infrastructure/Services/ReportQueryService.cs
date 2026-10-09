@@ -27,4 +27,56 @@ public class ReportQueryService(IConfiguration configuration) : IReportQueryServ
         var rows = await connection.QueryAsync<TaskProgressRowDto>(command);
         return rows.AsList();
     }
+    public async Task<IReadOnlyList<InternWorkloadRowDto>> GetInternWorkloadAsync(
+    Guid requesterId, bool isAdmin, Guid? projectId, DateOnly? from, DateOnly? to,
+    CancellationToken ct = default)
+    {
+        await using var connection = new SqlConnection(GetConnectionString());
+
+        var command = new CommandDefinition(
+            "dbo.usp_GetInternWorkloadReport",
+            new
+            {
+                RequesterId = requesterId,
+                IsAdmin = isAdmin,
+                ProjectId = projectId,
+                FromDate = ToDateTime(from),
+                ToDate = ToDateTime(to)
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: ct);
+
+        var rows = await connection.QueryAsync<InternWorkloadRowDto>(command);
+        return rows.AsList();
+    }
+
+    public async Task<IReadOnlyList<MentorWorkloadRowDto>> GetMentorWorkloadAsync(
+        Guid requesterId, bool isAdmin, Guid? projectId, DateOnly? from, DateOnly? to,
+        CancellationToken ct = default)
+    {
+        await using var connection = new SqlConnection(GetConnectionString());
+
+        var command = new CommandDefinition(
+            "dbo.usp_GetMentorWorkloadReport",
+            new
+            {
+                RequesterId = requesterId,
+                IsAdmin = isAdmin,
+                ProjectId = projectId,
+                FromDate = ToDateTime(from),
+                ToDate = ToDateTime(to)
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: ct);
+
+        var rows = await connection.QueryAsync<MentorWorkloadRowDto>(command);
+        return rows.AsList();
+    }
+
+    private string GetConnectionString()
+        => configuration.GetConnectionString("DefaultConnection")
+           ?? throw new InvalidOperationException("Thiếu connection string DefaultConnection.");
+
+    private static DateTime? ToDateTime(DateOnly? d)
+        => d?.ToDateTime(TimeOnly.MinValue);
 }
