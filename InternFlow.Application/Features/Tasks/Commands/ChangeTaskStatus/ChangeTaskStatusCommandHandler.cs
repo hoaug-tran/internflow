@@ -9,6 +9,8 @@ using InternFlow.Shared.Exceptions;
 using TaskStatus = InternFlow.Domain.Projects.TaskStatus;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using InternFlow.Application.Common.Caching;
+using InternFlow.Application.Features.Tasks.Queries.GetTaskSummary;
 
 namespace InternFlow.Application.Features.Tasks.Commands.ChangeTaskStatus;
 
@@ -18,15 +20,18 @@ public sealed class ChangeTaskStatusCommandHandler
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
 
     public ChangeTaskStatusCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
-        IMapper mapper)
+        IMapper mapper,
+        IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
+        _mediator = mediator;
     }
 
     public async Task<TaskResponse> Handle(
@@ -77,9 +82,10 @@ public sealed class ChangeTaskStatusCommandHandler
         }
 
         await _db.SaveChangesAsync(ct);
-
-        // #T14 Xóa cache task-summary:{projectId}
-        // await _cache.RemoveAsync($"task-summary:{task.ProjectId}", ct);
+        await _mediator.Publish(
+            new CacheInvalidationNotification(
+                CacheKeys.ForProject<GetTaskSummaryQuery>(task.ProjectId)),
+            ct);
 
         return _mapper.Map<TaskResponse>(task);
     }

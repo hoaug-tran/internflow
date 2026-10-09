@@ -1,6 +1,8 @@
 using InternFlow.Domain.Evaluations;
 using InternFlow.Domain.Identity;
 using InternFlow.Domain.Internships;
+using InternFlow.Domain.Projects;
+using TaskStatus = InternFlow.Domain.Projects.TaskStatus;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.Infrastructure.Data;
@@ -14,6 +16,10 @@ public static class DevSeeder
     public static readonly Guid InternId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     public static readonly Guid InternshipId = Guid.Parse("11111111-0000-0000-0000-000000000000");
     public static readonly Guid PeriodId = Guid.Parse("e1111111-1111-1111-1111-000000000003");
+    public static readonly Guid ProjectId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+    public static readonly Guid Task1Id = Guid.Parse("44444444-4444-4444-4444-000000000001");
+    public static readonly Guid Task2Id = Guid.Parse("44444444-4444-4444-4444-000000000002");
+    public static readonly Guid Task3Id = Guid.Parse("44444444-4444-4444-4444-000000000003");
 
     public static async Task SeedAsync(InternFlowDbContext db, CancellationToken ct = default)
     {
@@ -144,6 +150,91 @@ public static class DevSeeder
             Weight = c.Weight,
             DisplayOrder = i + 1
         }));
+        // ─── Project ────────────────────────────────────────────────────────────
+        var projectId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var project = new Project
+        {
+            Id = projectId,
+            InternshipId = InternshipId,
+            Name = "Dự án Demo InternFlow",
+            Description = "Dự án mẫu để test cache",
+            Status = ProjectStatus.Active,
+            StartDate = new DateOnly(2026, 10, 1),
+            EndDate = new DateOnly(2026, 12, 1),
+            CreatedBy = MentorId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        db.Projects.Add(project);
+
+        // ─── ProjectMembers ─────────────────────────────────────────────────────
+        // Mentor là Lead, Intern là Member
+        db.ProjectMembers.AddRange(
+            new ProjectMember
+            {
+                ProjectId = projectId,
+                UserId = MentorId,
+                Role = MemberRole.Lead,
+                JoinedAt = DateTime.UtcNow
+            },
+            new ProjectMember
+            {
+                ProjectId = projectId,
+                UserId = InternId,
+                Role = MemberRole.Member,
+                JoinedAt = DateTime.UtcNow
+            });
+
+        // ─── Tasks ──────────────────────────────────────────────────────────────
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var taskIds = new[]
+        {
+    Guid.Parse("44444444-4444-4444-4444-000000000001"),
+    Guid.Parse("44444444-4444-4444-4444-000000000002"),
+    Guid.Parse("44444444-4444-4444-4444-000000000003")
+};
+
+        db.Tasks.AddRange(
+            new TaskItem
+            {
+                Id = taskIds[0],
+                ProjectId = projectId,
+                AssigneeId = InternId,
+                Title = "Task 1 — Todo",
+                Status = TaskStatus.Todo,
+                Priority = TaskPriority.Medium,
+                DueDate = today.AddDays(7),
+                CreatedBy = MentorId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new TaskItem
+            {
+                Id = taskIds[1],
+                ProjectId = projectId,
+                AssigneeId = InternId,
+                Title = "Task 2 — InProgress",
+                Status = TaskStatus.InProgress,
+                Priority = TaskPriority.High,
+                DueDate = today.AddDays(3),
+                CreatedBy = MentorId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new TaskItem
+            {
+                Id = taskIds[2],
+                ProjectId = projectId,
+                AssigneeId = InternId,
+                Title = "Task 3 — Done",
+                Status = TaskStatus.Done,
+                Priority = TaskPriority.Low,
+                DueDate = today.AddDays(-1),
+                CompletedAt = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = MentorId,
+                CreatedAt = DateTime.UtcNow.AddDays(-5),
+                UpdatedAt = DateTime.UtcNow.AddDays(-1)
+            });
 
         await db.SaveChangesAsync(ct);
     }

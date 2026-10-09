@@ -118,12 +118,14 @@ public class TaskTests
         // Arrange
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQuery().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var dueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7));
         var request = new CreateTaskRequest(
@@ -153,12 +155,14 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, _, internId, projectId) = await SetupProjectWithIntern(db);
         var adminId = Guid.NewGuid();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             MockInternshipQuery().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
@@ -177,12 +181,14 @@ public class TaskTests
         // Arrange
         await using var db = TestDbContextFactory.Create();
         var adminId = Guid.NewGuid();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             MockInternshipQuery().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, Guid.NewGuid());
@@ -199,12 +205,14 @@ public class TaskTests
         // Arrange
         await using var db = TestDbContextFactory.Create();
         var (_, _, internId, projectId) = await SetupProjectWithIntern(db);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQuery().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
@@ -225,12 +233,14 @@ public class TaskTests
 
         db.Users.Add(EntityFactory.CreateUser(otherMentorId, UserRole.Mentor));
         await db.SaveChangesAsync();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(otherMentorId, UserRole.Mentor),
             MockInternshipQuery().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
@@ -247,12 +257,14 @@ public class TaskTests
         // Arrange
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, _, projectId) = await SetupProjectWithIntern(db);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQuery().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Assignee là Mentor — không phải Intern
         var request = new CreateTaskRequest(
@@ -274,12 +286,14 @@ public class TaskTests
 
         db.Users.Add(EntityFactory.CreateUser(outsiderId, UserRole.Intern));
         await db.SaveChangesAsync();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQuery().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, outsiderId);
@@ -296,12 +310,14 @@ public class TaskTests
         // Arrange
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new CreateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQuery(inBatch: false).Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
@@ -323,11 +339,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, _, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, internId, TaskStatus.Todo);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act
         var result = await handler.Handle(
@@ -345,11 +363,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, _, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, internId, TaskStatus.InProgress);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act
         var result = await handler.Handle(
@@ -367,11 +387,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, _, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, internId, TaskStatus.InReview);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act + Assert
         await Assert.ThrowsAsync<ForbiddenException>(() =>
@@ -387,11 +409,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId, TaskStatus.InReview);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act
         var result = await handler.Handle(
@@ -410,11 +434,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId, TaskStatus.InReview);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act
         var result = await handler.Handle(
@@ -432,11 +458,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId, TaskStatus.Todo);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -452,11 +480,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId, TaskStatus.Done);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -477,11 +507,13 @@ public class TaskTests
         await db.SaveChangesAsync();
 
         var taskId = await SeedTaskAsync(db, projectId, otherInternId, mentorId, TaskStatus.Todo);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>
@@ -496,11 +528,12 @@ public class TaskTests
         // Arrange
         await using var db = TestDbContextFactory.Create();
         var adminId = Guid.NewGuid();
-
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
         var handler = new ChangeTaskStatusCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>
@@ -714,11 +747,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new UpdateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new UpdateTaskRequest(
             "Updated Title", "Updated Desc",
@@ -753,11 +788,13 @@ public class TaskTests
         await db.SaveChangesAsync();
 
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new UpdateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new UpdateTaskRequest(
             "Task", null, TaskPriority.Medium, null, newInternId);
@@ -777,11 +814,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new UpdateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         // Assignee mới là Mentor — không phải Intern
         var request = new UpdateTaskRequest(
@@ -800,11 +839,13 @@ public class TaskTests
         await using var db = TestDbContextFactory.Create();
         var (_, mentorId, internId, projectId) = await SetupProjectWithIntern(db);
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new UpdateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new UpdateTaskRequest(
             "Updated", null, TaskPriority.Medium, null, internId);
@@ -821,11 +862,12 @@ public class TaskTests
         // Arrange
         await using var db = TestDbContextFactory.Create();
         var adminId = Guid.NewGuid();
-
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
         var handler = new UpdateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new UpdateTaskRequest(
             "Task", null, TaskPriority.Medium, null, Guid.NewGuid());
@@ -837,7 +879,7 @@ public class TaskTests
     }
 
     [Fact]
-    public async Task Update_NonMemberMentor_ThrowsNotFound()
+    public async Task Update_NonMemberMentor_ThrowsForbidden()
     {
         // Arrange — Mentor không thuộc project
         await using var db = TestDbContextFactory.Create();
@@ -848,17 +890,19 @@ public class TaskTests
         await db.SaveChangesAsync();
 
         var taskId = await SeedTaskAsync(db, projectId, internId, mentorId);
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new UpdateTaskCommandHandler(
             db,
             MockCurrentUserFactory.Create(otherMentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+            mediatorMock.Object);
 
         var request = new UpdateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
 
         // Act + Assert
-        await Assert.ThrowsAsync<NotFoundException>(() =>
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.Handle(new UpdateTaskCommand(taskId, request),
                 CancellationToken.None));
     }

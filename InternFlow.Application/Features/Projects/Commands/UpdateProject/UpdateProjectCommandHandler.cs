@@ -2,8 +2,6 @@ using AutoMapper;
 using InternFlow.Application.Common.Extensions;
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Projects.DTOs;
-using InternFlow.Domain.Identity;
-using InternFlow.Domain.Projects;
 using InternFlow.Shared.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -31,28 +29,15 @@ public sealed class UpdateProjectCommandHandler
         UpdateProjectCommand cmd, CancellationToken ct)
     {
         var userId = _currentUser.EnsureAuthenticated();
-        var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
+
+        await _db.EnsureCanManageProjectAsync(
+            cmd.ProjectId, userId, _currentUser.Role, ct);
 
         var project = await _db.Projects
-            .FirstOrDefaultAsync(p => p.Id == cmd.ProjectId, ct)
-            ?? throw new NotFoundException(
-                $"Dự án {cmd.ProjectId} không tồn tại.");
-
-        if (!isAdmin)
-        {
-            var isLead = await _db.ProjectMembers
-                .AsNoTracking()
-                .AnyAsync(m => m.ProjectId == cmd.ProjectId
-                            && m.UserId == userId
-                            && m.Role == MemberRole.Lead
-                            && m.RemovedAt == null, ct);
-
-            if (!isLead)
-                throw new ForbiddenException(
-                    "Chỉ Admin hoặc Lead của dự án mới được sửa.");
-        }
-
-        if (!string.Equals(project.Name, cmd.Request.Name, StringComparison.Ordinal))
+            .FirstAsync(p => p.Id == cmd.ProjectId, ct);
+        // Check trùng tên (chỉ khi đổi tên)
+        if (!string.Equals(project.Name, cmd.Request.Name,
+                StringComparison.OrdinalIgnoreCase))
         {
             var nameExists = await _db.Projects
                 .AsNoTracking()

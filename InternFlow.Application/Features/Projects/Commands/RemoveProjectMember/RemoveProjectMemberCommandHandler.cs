@@ -1,11 +1,13 @@
 using InternFlow.Application.Common.Extensions;
 using InternFlow.Application.Common.Interfaces;
-using InternFlow.Domain.Identity;
 using InternFlow.Domain.Projects;
 using InternFlow.Shared.Exceptions;
 using TaskStatus = InternFlow.Domain.Projects.TaskStatus;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using InternFlow.Application.Common.Caching;
+using InternFlow.Application.Features.Tasks.Queries.GetTaskSummary;
+using InternFlow.Application.Features.Projects.Queries.GetProjectMembers;
 
 namespace InternFlow.Application.Features.Projects.Commands.RemoveProjectMember;
 
@@ -14,40 +16,31 @@ public sealed class RemoveProjectMemberCommandHandler
 {
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
+    private readonly IMediator _mediator;
 
     public RemoveProjectMemberCommandHandler(
         IInternFlowDbContext db,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
+        _mediator = mediator;
     }
 
     public async Task<Unit> Handle(
         RemoveProjectMemberCommand cmd, CancellationToken ct)
     {
-        var userId = _currentUser.EnsureRole(UserRole.Admin, UserRole.Mentor);
-        var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
+        var userId = _currentUser.EnsureAuthenticated();
+
+        await _db.EnsureCanManageProjectAsync(
+           cmd.ProjectId, userId, _currentUser.Role, ct);
 
         var project = await _db.Projects
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == cmd.ProjectId, ct)
             ?? throw new NotFoundException(
                 $"Dự án {cmd.ProjectId} không tồn tại.");
-
-        if (!isAdmin)
-        {
-            var isLead = await _db.ProjectMembers
-                .AsNoTracking()
-                .AnyAsync(m => m.ProjectId == cmd.ProjectId
-                            && m.UserId == userId
-                            && m.Role == MemberRole.Lead
-                            && m.RemovedAt == null, ct);
-
-            if (!isLead)
-                throw new ForbiddenException(
-                    "Chỉ Admin hoặc Lead mới xóa thành viên.");
-        }
 
         var member = await _db.ProjectMembers
             .FirstOrDefaultAsync(m => m.ProjectId == cmd.ProjectId
@@ -85,6 +78,15 @@ public sealed class RemoveProjectMemberCommandHandler
 
         member.RemovedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        await _mediator.Publish(
+    new CacheInvalidationNotification(
+        CacheKeys.ForProject<GetProjectMembersQuery>(cmd.ProjectId)),
+    ct);
+
+        await _mediator.Publish(
+            new CacheInvalidationNotification(
+                CacheKeys.ForProject<GetTaskSummaryQuery>(cmd.ProjectId)),
+            ct);
 
         return Unit.Value;
     }
