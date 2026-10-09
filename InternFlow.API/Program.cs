@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using InternFlow.API.Conventions;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
@@ -13,17 +14,29 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+    if (!builder.Environment.IsEnvironment("Testing"))
+    {
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
+    }
 
     builder.Host.UseSerilog((ctx, services, cfg) => cfg
         .ReadFrom.Configuration(ctx.Configuration)
         .ReadFrom.Services(services)
-        .Enrich.FromLogContext());
+        .Enrich.FromLogContext(),
+        preserveStaticLogger: true);
 
     // Add services to the container.
     builder.Services.AddControllers(options =>
 {
     options.Conventions.Add(new ApiResponseConvention());
-});
+})
+.AddJsonOptions(options =>          // ★ thêm block này
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
     builder.Services.AddEndpointsApiExplorer();
 
     // Cấu hình Swagger với JWT Bearer Authorize
@@ -136,10 +149,15 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
+    throw;
 }
 finally
 {
-    Log.CloseAndFlush();
+    var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+    if (!string.Equals(env, "Testing", StringComparison.OrdinalIgnoreCase))
+    {
+        Log.CloseAndFlush();
+    }
 }
 
 public partial class Program { }

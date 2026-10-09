@@ -1,3 +1,5 @@
+using FluentAssertions;
+using InternFlow.Tests.Integration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
@@ -5,22 +7,17 @@ using System.Net;
 
 namespace InternFlow.Tests;
 
-public class ApiFactory : WebApplicationFactory<Program>
+[Collection("Integration")]
+public class HealthCheckTests : IntegrationTestBase
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-        => builder.UseEnvironment("Testing");
-}
-
-public class HealthCheckTests : IClassFixture<ApiFactory>
-{
-    private readonly HttpClient _client;
-
-    public HealthCheckTests(ApiFactory factory) => _client = factory.CreateClient();
+    public HealthCheckTests(CustomWebApplicationFactory factory)
+        : base(factory) { }
 
     [Fact]
     public async Task Health_returns_200()
     {
-        var res = await _client.GetAsync("/health");
-        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var response = await Client.GetAsync("/health");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }
