@@ -13,8 +13,6 @@ public class CreatePeriodCommandHandler(IInternFlowDbContext context)
 {
     public async Task<ApiResponse<EvaluationPeriodDto>> Handle(CreatePeriodCommand r, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(r.Name)) throw new BadRequestException("Tên kỳ đánh giá không được để trống.");
-        if (r.EndDate < r.StartDate) throw new BadRequestException("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
         if (!await context.Internships.AnyAsync(i => i.Id == r.InternshipId, ct))
             throw new NotFoundException("Không tìm thấy đợt thực tập.");
 

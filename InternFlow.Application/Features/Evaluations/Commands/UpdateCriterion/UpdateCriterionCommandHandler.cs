@@ -12,9 +12,6 @@ public class UpdateCriterionCommandHandler(IInternFlowDbContext context, ICacheS
 {
     public async Task<ApiResponse<CriterionDto>> Handle(UpdateCriterionCommand r, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(r.Name)) throw new BadRequestException("Tên tiêu chí không được để trống.");
-        if (r.Weight <= 0 || r.Weight > EvaluationMapping.MaxTotalWeight)
-            throw new BadRequestException("Trọng số phải trong khoảng (0, 100].");
 
         var c = await context.Criteria.FirstOrDefaultAsync(x => x.Id == r.Id && x.EvaluationPeriodId == r.PeriodId, ct)
             ?? throw new NotFoundException("Không tìm thấy tiêu chí.");
