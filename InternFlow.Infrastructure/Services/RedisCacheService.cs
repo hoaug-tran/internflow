@@ -2,17 +2,20 @@ using System.Text.Json;
 using InternFlow.Application.Common.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace InternFlow.Infrastructure.Services;
 
 public class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
+    private readonly IConnectionMultiplexer _redis;
     private readonly ILogger<RedisCacheService> _logger;
 
-    public RedisCacheService(IDistributedCache cache, ILogger<RedisCacheService> logger)
+    public RedisCacheService(IDistributedCache cache, IConnectionMultiplexer redis, ILogger<RedisCacheService> logger)
     {
         _cache = cache;
+        _redis = redis;
         _logger = logger;
     }
 
@@ -52,6 +55,27 @@ public class RedisCacheService : ICacheService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Redis REMOVE lỗi, bỏ qua. Key={Key}", key);
+        }
+    }
+    public async Task RemoveByPrefixAsync(string prefix, CancellationToken ct = default)
+    {
+        try
+        {
+            foreach (var endpoint in _redis.GetEndPoints())
+            {
+                var server = _redis.GetServer(endpoint);
+                if (!server.IsConnected || server.IsReplica) continue;
+
+                var db = _redis.GetDatabase();
+                await foreach (var key in server.KeysAsync(pattern: $"{prefix}*"))
+                {
+                    await db.KeyDeleteAsync(key);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Redis REMOVE BY PREFIX lỗi. Prefix={Prefix}", prefix);
         }
     }
 }

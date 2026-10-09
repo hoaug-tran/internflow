@@ -8,6 +8,8 @@ using TaskStatus = InternFlow.Domain.Projects.TaskStatus;
 using InternFlow.Shared.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using InternFlow.Application.Features.Tasks.Queries.GetTaskSummary;
+using InternFlow.Application.Common.Caching;
 
 namespace InternFlow.Application.Features.Tasks.Commands.CreateTask;
 
@@ -18,24 +20,29 @@ public sealed class CreateTaskCommandHandler
     private readonly ICurrentUserService _currentUser;
     private readonly IInternshipQueryService _internshipQuery;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
 
     public CreateTaskCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
         IInternshipQueryService internshipQuery,
-        IMapper mapper)
+        IMapper mapper,
+        IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
         _internshipQuery = internshipQuery;
         _mapper = mapper;
+        _mediator = mediator;
     }
 
     public async Task<TaskResponse> Handle(
         CreateTaskCommand cmd, CancellationToken ct)
     {
-        var userId = _currentUser.EnsureRole(UserRole.Admin, UserRole.Mentor);
-        var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
+        var userId = _currentUser.EnsureAuthenticated();
+
+        await _db.EnsureCanManageProjectAsync(
+            cmd.ProjectId, userId, _currentUser.Role, ct);
 
         var project = await _db.Projects
             .AsNoTracking()
@@ -44,21 +51,6 @@ public sealed class CreateTaskCommandHandler
             .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException(
                 $"Dự án {cmd.ProjectId} không tồn tại.");
-
-        // Admin or Lead của project
-        if (!isAdmin)
-        {
-            var isLead = await _db.ProjectMembers
-                .AsNoTracking()
-                .AnyAsync(m => m.ProjectId == cmd.ProjectId
-                            && m.UserId == userId
-                            && m.Role == MemberRole.Lead
-                            && m.RemovedAt == null, ct);
-
-            if (!isLead)
-                throw new ForbiddenException(
-                    "Chỉ Admin hoặc Lead của dự án mới tạo task.");
-        }
 
         // Assignee phải là Intern, active
         var assignee = await _db.Users
@@ -107,6 +99,10 @@ public sealed class CreateTaskCommandHandler
 
         _db.Tasks.Add(task);
         await _db.SaveChangesAsync(ct);
+        await _mediator.Publish(
+            new CacheInvalidationNotification(
+                CacheKeys.ForProject<GetTaskSummaryQuery>(task.ProjectId)),
+    ct);
 
         var createdTask = await _db.Tasks
             .Include(t => t.Assignee)

@@ -17,6 +17,7 @@ namespace InternFlow.Tests.Features.Projects;
 
 public class ProjectMemberTests
 {
+
     private static Mock<IInternshipQueryService> MockInternshipQuery(
         bool inBatch = true,
         bool mentorOfIntern = true)
@@ -32,9 +33,6 @@ public class ProjectMemberTests
         return m;
     }
 
-    // ═══════════════════════════════════════════════════════
-    // ADD MEMBER
-    // ═══════════════════════════════════════════════════════
 
     [Fact]
     public async Task AddMember_AdminRole_Success()
@@ -61,11 +59,13 @@ public class ProjectMemberTests
         project.Id = projectId;
         db.Projects.Add(project);
         await db.SaveChangesAsync();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new AddProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
+            mediatorMock.Object,
             MockInternshipQuery().Object)
             ;
 
@@ -110,11 +110,13 @@ public class ProjectMemberTests
         project.Id = projectId;
         db.Projects.Add(project);
         await db.SaveChangesAsync();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new AddProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
+            mediatorMock.Object,
             MockInternshipQuery(inBatch: false).Object);
 
         var request = new AddProjectMemberRequest(internId, MemberRole.Member);
@@ -157,11 +159,12 @@ public class ProjectMemberTests
             JoinedAt = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
-
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
         var handler = new AddProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
+            mediatorMock.Object,
             MockInternshipQuery().Object);
 
         var request = new AddProjectMemberRequest(mentorId, MemberRole.Member);
@@ -213,11 +216,12 @@ public class ProjectMemberTests
         // Lead là Lead của project
         db.ProjectMembers.Add(EntityFactory.CreateLead(projectId, leadId));
         await db.SaveChangesAsync();
-
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
         var handler = new AddProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(leadId, UserRole.Mentor),
             TestMapperFactory.Instance,
+            mediatorMock.Object,
             MockInternshipQuery(inBatch: true, mentorOfIntern: false).Object);
 
         var request = new AddProjectMemberRequest(internId, MemberRole.Member);
@@ -249,10 +253,12 @@ public class ProjectMemberTests
             JoinedAt = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new RemoveProjectMemberCommandHandler(
             db,
-            MockCurrentUserFactory.Create(adminId, UserRole.Admin));
+            MockCurrentUserFactory.Create(adminId, UserRole.Admin),
+            mediatorMock.Object);
 
         // Act
         await handler.Handle(
@@ -282,10 +288,12 @@ public class ProjectMemberTests
         db.Projects.Add(project);
         db.ProjectMembers.Add(EntityFactory.CreateLead(projectId, leadId));
         await db.SaveChangesAsync();
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
 
         var handler = new RemoveProjectMemberCommandHandler(
             db,
-            MockCurrentUserFactory.Create(adminId, UserRole.Admin));
+            MockCurrentUserFactory.Create(adminId, UserRole.Admin),
+            mediatorMock.Object);
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -327,10 +335,11 @@ public class ProjectMemberTests
             UpdatedAt = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
-
+        var mediatorMock = MockMediatorFactory.CreateNoOp();
         var handler = new RemoveProjectMemberCommandHandler(
             db,
-            MockCurrentUserFactory.Create(adminId, UserRole.Admin));
+            MockCurrentUserFactory.Create(adminId, UserRole.Admin),
+            mediatorMock.Object);
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
