@@ -13,9 +13,6 @@ public class CreateCriterionCommandHandler(IInternFlowDbContext context, ICacheS
 {
     public async Task<ApiResponse<CriterionDto>> Handle(CreateCriterionCommand r, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(r.Name)) throw new BadRequestException("Tên tiêu chí không được để trống.");
-        if (r.Weight <= 0 || r.Weight > EvaluationMapping.MaxTotalWeight)
-            throw new BadRequestException("Trọng số phải trong khoảng (0, 100].");
 
         if (!await context.EvaluationPeriods.AnyAsync(p => p.Id == r.PeriodId, ct))
             throw new NotFoundException("Không tìm thấy kỳ đánh giá.");
