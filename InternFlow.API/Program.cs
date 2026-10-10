@@ -14,12 +14,6 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-    if (!builder.Environment.IsEnvironment("Testing"))
-    {
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .CreateBootstrapLogger();
-    }
 
     builder.Host.UseSerilog((ctx, services, cfg) => cfg
         .ReadFrom.Configuration(ctx.Configuration)
@@ -28,15 +22,16 @@ try
         preserveStaticLogger: true);
 
     // Add services to the container.
-    builder.Services.AddControllers(options =>
+    builder.Services
+    .AddControllers(options =>
     {
         options.Conventions.Add(new ApiResponseConvention());
     })
-        .AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.Converters.Add(
-                new JsonStringEnumConverter());
-        });
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
     builder.Services.AddEndpointsApiExplorer();
 
     // Cấu hình Swagger với JWT Bearer Authorize
@@ -153,11 +148,7 @@ catch (Exception ex)
 }
 finally
 {
-    var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-    if (!string.Equals(env, "Testing", StringComparison.OrdinalIgnoreCase))
-    {
-        Log.CloseAndFlush();
-    }
+    Log.CloseAndFlush();
 }
 
 public partial class Program { }
