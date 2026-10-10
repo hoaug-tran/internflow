@@ -1,12 +1,13 @@
 using FluentValidation;
 using InternFlow.Application.Common.Behaviors;
+using InternFlow.Application.Common.Caching;
 using InternFlow.Application.Common.Interfaces;
 using InternFlow.Application.Features.Projects.Commands.CreateProject;
-using InternFlow.Application.Features.Projects.Queries.GetProjects;
 using InternFlow.Infrastructure.Data;
 using InternFlow.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 /// <summary>
 /// Extension method đăng ký toàn bộ service của dự án.
@@ -39,8 +40,8 @@ public static class DependencyInjection
             includeInternalTypes: true);
         services.AddAutoMapper(cfg => { }, typeof(CreateProjectCommandValidator).Assembly);
         services.AddTransient(
-            typeof(IPipelineBehavior<,>),
-            typeof(ValidationBehavior<,>));
+            typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
 
 
         // ─── 3. Application & Infrastructure Services ───────────────────────────
@@ -49,16 +50,31 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
+        services.AddScoped<IReportQueryService, ReportQueryService>();
+
+        var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
         services.AddStackExchangeRedisCache(options =>
         {
-            var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
-            options.ConfigurationOptions = StackExchange.Redis.ConfigurationOptions.Parse(redis);
+
+            options.ConfigurationOptions = ConfigurationOptions.Parse(redis);
             options.ConfigurationOptions.AbortOnConnectFail = false;
             options.ConfigurationOptions.ConnectTimeout = 1000;
             options.ConfigurationOptions.SyncTimeout = 1000;
             options.ConfigurationOptions.AsyncTimeout = 1000;
         });
+
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            var options = ConfigurationOptions.Parse(redis);
+            options.AbortOnConnectFail = false;
+            options.ConnectTimeout = 1000;
+            options.SyncTimeout = 1000;
+            options.AsyncTimeout = 1000;
+            return ConnectionMultiplexer.Connect(options);
+        });
         services.AddSingleton<ICacheService, RedisCacheService>();
+        services.AddSingleton<ICacheKeyBuilder, DefaultCacheKeyBuilder>();
+
         services.AddScoped<IPagedQueryExecutor, PagedQueryExecutor>();
 
 

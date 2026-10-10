@@ -26,21 +26,9 @@ public sealed class GetProjectMembersQueryHandler
         GetProjectMembersQuery req, CancellationToken ct)
     {
         var userId = _currentUser.EnsureAuthenticated();
-        var isAdmin = _currentUser.IsInRole(UserRole.Admin.ToString());
 
-        // Kiểm tra quyền xem members
-        if (!isAdmin)
-        {
-            var isMember = await _db.ProjectMembers
-                .AsNoTracking()
-                .AnyAsync(m => m.ProjectId == req.ProjectId
-                            && m.UserId == userId
-                            && m.RemovedAt == null, ct);
-
-            if (!isMember)
-                throw new NotFoundException(
-                    "Dự án không tồn tại.");
-        }
+        await _db.EnsureCanViewProjectAsync(
+            req.ProjectId, userId, _currentUser.Role, ct);
 
         var members = await _db.ProjectMembers
             .AsNoTracking()
