@@ -14,12 +14,6 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-    if (!builder.Environment.IsEnvironment("Testing"))
-    {
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .CreateBootstrapLogger();
-    }
 
     builder.Host.UseSerilog((ctx, services, cfg) => cfg
         .ReadFrom.Configuration(ctx.Configuration)
@@ -153,11 +147,7 @@ catch (Exception ex)
 }
 finally
 {
-    var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-    if (!string.Equals(env, "Testing", StringComparison.OrdinalIgnoreCase))
-    {
-        Log.CloseAndFlush();
-    }
+    Log.CloseAndFlush();
 }
 
 public partial class Program { }
