@@ -22,15 +22,16 @@ try
         preserveStaticLogger: true);
 
     // Add services to the container.
-    builder.Services.AddControllers(options =>
+    builder.Services
+    .AddControllers(options =>
     {
         options.Conventions.Add(new ApiResponseConvention());
     })
-        .AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.Converters.Add(
-                new JsonStringEnumConverter());
-        });
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
     builder.Services.AddEndpointsApiExplorer();
 
     // Cấu hình Swagger với JWT Bearer Authorize

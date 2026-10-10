@@ -65,12 +65,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateBootstrapLogger();
+
         var host = base.CreateHost(builder);
 
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<InternFlowDbContext>();
         db.Database.Migrate();
-
         DevSeeder.SeedAsync(db).GetAwaiter().GetResult();
 
         return host;
