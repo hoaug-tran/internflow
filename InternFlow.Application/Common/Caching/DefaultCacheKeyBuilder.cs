@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using InternFlow.Application.Common.Interfaces;
 
 namespace InternFlow.Application.Common.Caching;
 
