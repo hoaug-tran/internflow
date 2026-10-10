@@ -65,7 +65,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateBootstrapLogger();
-
         var host = base.CreateHost(builder);
 
         using var scope = host.Services.CreateScope();
