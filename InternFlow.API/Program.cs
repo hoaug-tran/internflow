@@ -12,12 +12,15 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger()
 
 try
 {
+    LoadEnvironmentVariables();
+
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog((ctx, services, cfg) => cfg
         .ReadFrom.Configuration(ctx.Configuration)
         .ReadFrom.Services(services)
-        .Enrich.FromLogContext());
+        .Enrich.FromLogContext(),
+        preserveStaticLogger: true);
 
     // Add services to the container.
     builder.Services.AddControllers(options =>
@@ -142,4 +145,62 @@ finally
     Log.CloseAndFlush();
 }
 
-public partial class Program { }
+public partial class Program
+{
+    private static void LoadEnvironmentVariables()
+    {
+        var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (dir != null)
+        {
+            var envPath = Path.Combine(dir.FullName, ".env");
+            if (File.Exists(envPath))
+            {
+                foreach (var line in File.ReadAllLines(envPath))
+                {
+                    var trimmed = line.Trim();
+                    if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith("#"))
+                    {
+                        continue;
+                    }
+
+                    var parts = trimmed.Split('=', 2);
+                    if (parts.Length == 2)
+                    {
+                        var key = parts[0].Trim();
+                        var val = parts[1].Trim().Trim('"', '\'');
+                        Environment.SetEnvironmentVariable(key, val);
+                    }
+                }
+                break;
+            }
+            dir = dir.Parent;
+        }
+
+        var saPassword = Environment.GetEnvironmentVariable("SA_PASSWORD");
+        var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "InternFlowDb";
+        if (!string.IsNullOrEmpty(saPassword))
+        {
+            Environment.SetEnvironmentVariable(
+                "ConnectionStrings__DefaultConnection",
+                $"Server=localhost,1433;Database={dbName};User Id=sa;Password={saPassword};TrustServerCertificate=True;");
+        }
+
+        var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+        if (!string.IsNullOrEmpty(jwtSecret))
+        {
+            Environment.SetEnvironmentVariable("Jwt__Secret", jwtSecret);
+        }
+
+        var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+        if (!string.IsNullOrEmpty(jwtIssuer))
+        {
+            Environment.SetEnvironmentVariable("Jwt__Issuer", jwtIssuer);
+        }
+
+        var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+        if (!string.IsNullOrEmpty(jwtAudience))
+        {
+            Environment.SetEnvironmentVariable("Jwt__Audience", jwtAudience);
+        }
+    }
+}
