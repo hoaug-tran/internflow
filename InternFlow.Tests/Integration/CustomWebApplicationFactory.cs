@@ -22,7 +22,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         await _sqlContainer.StartAsync();
     }
-
     public new async Task DisposeAsync()
     {
         await _sqlContainer.DisposeAsync();
