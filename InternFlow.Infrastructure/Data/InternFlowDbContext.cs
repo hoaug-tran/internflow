@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.Infrastructure.Data;
 
-public class InternFlowDbContext : DbContext, IInternFlowDbContext
+public class InternFlowDbContext : DbContext, IInternFlowDbContext, IUnitOfWork
 {
     public InternFlowDbContext(DbContextOptions<InternFlowDbContext> options) : base(options)
     {
