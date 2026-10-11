@@ -10,7 +10,7 @@ public sealed record CreateProjectRequest(
     DateOnly? StartDate,
     DateOnly? EndDate);
 public sealed record UpdateProjectRequest(
-    string Name,
+    string? Name,
     string? Description,
     ProjectStatus Status,
     DateOnly? StartDate,

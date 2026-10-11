@@ -1,4 +1,6 @@
-namespace InternFlow.Application.Common.Caching;
+using InternFlow.Application.Common.Caching;
+
+namespace InternFlow.Application.Common.Interfaces;
 
 public interface ICacheKeyBuilder
 {

@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Serilog;
 using Testcontainers.MsSql;
 
 namespace InternFlow.Tests.Integration;
@@ -21,7 +22,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         await _sqlContainer.StartAsync();
     }
-
     public new async Task DisposeAsync()
     {
         await _sqlContainer.DisposeAsync();
@@ -60,15 +60,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
-        AppContext.SetData("InternFlow.IsTesting", true);
+        Log.CloseAndFlush();
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
 
         var host = base.CreateHost(builder);
 
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<InternFlowDbContext>();
         db.Database.Migrate();
-
-        // ★ DevSeeder.SeedAsync(db, ct) — signature khớp
         DevSeeder.SeedAsync(db).GetAwaiter().GetResult();
 
         return host;
