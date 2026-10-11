@@ -3,7 +3,7 @@ using InternFlow.Domain.Identity;
 using InternFlow.Domain.Tasks;
 using Xunit;
 
-namespace InternFlow.Domain.Tests.Tasks;
+namespace InternFlow.Tests.Tasks;
 
 public class TaskWorkflowTests
 {
