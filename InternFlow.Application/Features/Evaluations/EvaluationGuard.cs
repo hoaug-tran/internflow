@@ -2,7 +2,6 @@ using InternFlow.Application.Common.Interfaces;
 using InternFlow.Domain.Evaluations;
 using InternFlow.Domain.Identity;
 using InternFlow.Shared.Exceptions;
-using Microsoft.EntityFrameworkCore;
 
 namespace InternFlow.Application.Features.Evaluations;
 
@@ -15,7 +14,7 @@ public static class EvaluationGuard
     }
 
     public static async Task EnsureCanEvaluateAsync(
-        IInternFlowDbContext context, ICurrentUserService user,
+        IInternshipQueryService internships, ICurrentUserService user,
         Guid internshipId, Guid internId, CancellationToken ct)
     {
         if (user.UserId is not { } userId)
@@ -23,24 +22,12 @@ public static class EvaluationGuard
 
         if (user.IsInRole(nameof(UserRole.Admin)))
         {
-            var inBatch = await context.BatchInterns
-                .AnyAsync(b => b.InternshipId == internshipId && b.InternId == internId, ct);
-            if (!inBatch)
+            if (!await internships.IsInternInBatchAsync(internId, internshipId, ct))
                 throw new BadRequestException("Intern không thuộc đợt thực tập của kỳ đánh giá này.");
             return;
         }
 
-        var assigned = await context.MentorAssignments.AnyAsync(m =>
-            m.InternshipId == internshipId && m.InternId == internId &&
-            m.MentorId == userId && m.EndedAt == null, ct);
-        if (!assigned)
+        if (!await internships.IsMentorAssignedToInternAsync(userId, internId, internshipId, ct))
             throw new ForbiddenException("Bạn không phụ trách intern này.");
     }
-
-    public static Task<List<Criterion>> LoadActiveCriteriaAsync(
-        IInternFlowDbContext context, Guid periodId, CancellationToken ct) =>
-        context.Criteria.AsNoTracking()
-            .Where(c => c.EvaluationPeriodId == periodId && c.IsActive)
-            .OrderBy(c => c.DisplayOrder)
-            .ToListAsync(ct);
 }
