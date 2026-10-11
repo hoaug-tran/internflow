@@ -8,6 +8,8 @@ using InternFlow.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using InternFlow.Infrastructure.Repositories.Evaluations;
+using InternFlow.Application.Common.Interfaces.Repositories.Evaluations;
 
 /// <summary>
 /// Extension method đăng ký toàn bộ service của dự án.
@@ -51,6 +53,11 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IInternshipQueryService, InternshipQueryService>();
         services.AddScoped<IReportQueryService, ReportQueryService>();
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<InternFlowDbContext>());
+        services.AddScoped<IEvaluationPeriodRepository, EvaluationPeriodRepository>();
+        services.AddScoped<ICriterionRepository, CriterionRepository>();
+        services.AddScoped<IEvaluationRepository, EvaluationRepository>();
+
 
         var redis = configuration.GetConnectionString("Redis") ?? "localhost:6379";
         services.AddStackExchangeRedisCache(options =>
