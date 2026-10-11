@@ -1,6 +1,7 @@
 using AutoMapper;
 using InternFlow.Application.Features.Projects;
 using InternFlow.Application.Features.Tasks;
+using InternFlow.Application.Features.WorkLogs;
 
 namespace InternFlow.Tests.Common.TestHelpers;
 
@@ -12,7 +13,7 @@ public static class TestMapperFactory
         {
             cfg.AddProfile<ProjectMappingProfile>();
             cfg.AddProfile<TaskMappingProfile>();
-            // cfg.AddProfile<WorkLogMappingProfile>();
+            cfg.AddProfile<WorkLogMappingProfile>();
         });
 
         config.AssertConfigurationIsValid();

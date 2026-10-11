@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using InternFlow.API.Conventions;
 using InternFlow.API.Extensions;
 using InternFlow.API.Middlewares;
@@ -17,13 +18,20 @@ try
     builder.Host.UseSerilog((ctx, services, cfg) => cfg
         .ReadFrom.Configuration(ctx.Configuration)
         .ReadFrom.Services(services)
-        .Enrich.FromLogContext());
+        .Enrich.FromLogContext(),
+        preserveStaticLogger: true);
 
     // Add services to the container.
-    builder.Services.AddControllers(options =>
-{
-    options.Conventions.Add(new ApiResponseConvention());
-});
+    builder.Services
+    .AddControllers(options =>
+    {
+        options.Conventions.Add(new ApiResponseConvention());
+    })
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
     builder.Services.AddEndpointsApiExplorer();
 
     // Cấu hình Swagger với JWT Bearer Authorize
@@ -136,6 +144,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
+    throw;
 }
 finally
 {

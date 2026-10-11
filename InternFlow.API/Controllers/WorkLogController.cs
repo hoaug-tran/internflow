@@ -1,7 +1,9 @@
 using InternFlow.API.Controllers.Conventions;
 using InternFlow.Application.Features.WorkLogs.Commands.CreateWorkLog;
+using InternFlow.Application.Features.WorkLogs.Commands.DeleteWorkLog;
 using InternFlow.Application.Features.WorkLogs.Commands.UpdateWorkLog;
 using InternFlow.Application.Features.WorkLogs.DTOs;
+using InternFlow.Application.Features.WorkLogs.Queries.GetWorkLogById;
 using InternFlow.Application.Features.WorkLogs.Queries.GetWorkLogs;
 using InternFlow.Shared.Common;
 using InternFlow.Shared.Models;
@@ -82,4 +84,24 @@ public class WorkLogsController : ApiControllerBase
         var result = await Sender.Send(new GetWorkLogsQuery(parameters), ct);
         return ApiResponse<PagedResult<WorkLogListItemResponse>>.Ok(result);
     }
+    /// <summary>Xóa nhật ký .</summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<ApiResponse> Delete(
+    Guid id,
+    CancellationToken ct)
+    {
+        await Sender.Send(new DeleteWorkLogCommand(id), ct);
+        return ApiResponse.Ok("Đã xóa nhật ký");
+    }
+
+    /// <summary>Lấy chi tiết worklog theo Id.</summary>
+    [HttpGet("{id:guid}")]
+    public async Task<ApiResponse<WorkLogResponse>> GetById(
+    Guid id,
+    CancellationToken ct)
+    {
+        var result = await Sender.Send(new GetWorkLogByIdQuery(id), ct);
+        return ApiResponse<WorkLogResponse>.Ok(result);
+    }
+
 }

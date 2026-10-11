@@ -4,6 +4,7 @@ using InternFlow.Application.Features.Projects.Commands.CreateProject;
 using InternFlow.Application.Features.Projects.Commands.RemoveProjectMember;
 using InternFlow.Application.Features.Projects.Commands.UpdateProject;
 using InternFlow.Application.Features.Projects.DTOs;
+using InternFlow.Application.Features.Projects.Queries.GetProjectById;
 using InternFlow.Application.Features.Projects.Queries.GetProjectMembers;
 using InternFlow.Application.Features.Projects.Queries.GetProjects;
 using InternFlow.Application.Features.Tasks.DTOs;
@@ -140,5 +141,18 @@ public class ProjectsController : ApiControllerBase
         var result = await Sender.Send(new GetTaskSummaryQuery(id), ct);
 
         return ApiResponse<TaskSummaryResponse>.Ok(result);
+    }
+    /// <summary>Lấy thông tin chi tiết một dự án theo Id.</summary>
+    /// <remarks>
+    /// **Phân quyền:** Admin hoặc member của dự án (403 nếu không).
+    /// </remarks>
+    [HttpGet("{id:guid}")]
+    public async Task<ApiResponse<ProjectResponse>> GetById(
+        Guid id,
+        CancellationToken ct)
+    {
+        var result = await Sender.Send(new GetProjectByIdQuery(id), ct);
+
+        return ApiResponse<ProjectResponse>.Ok(result);
     }
 }

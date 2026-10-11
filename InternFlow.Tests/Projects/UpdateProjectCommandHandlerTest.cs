@@ -5,9 +5,14 @@ using InternFlow.Domain.Identity;
 using InternFlow.Domain.Projects;
 using InternFlow.Shared.Exceptions;
 using InternFlow.Tests.Common.TestHelpers;
+using Xunit;
 
-namespace InternFlow.Tests.Features.Projects;
+namespace InternFlow.Tests.Projects;
 
+/// <summary>
+/// Test cho UpdateProjectCommandHandler.
+/// Bao gồm: update fields, phân quyền, duplicate name.
+/// </summary>
 public class UpdateProjectCommandHandlerTests
 {
     [Fact]
@@ -15,16 +20,8 @@ public class UpdateProjectCommandHandlerTests
     {
         // Arrange
         await using var db = TestDbContextFactory.Create();
-        var internshipId = Guid.NewGuid();
-        var adminId = Guid.NewGuid();
-        var projectId = Guid.NewGuid();
-
-        db.Internships.Add(EntityFactory.CreateInternship(internshipId, adminId));
-
-        var project = EntityFactory.CreateProject(internshipId, adminId);
-        project.Id = projectId;
-        db.Projects.Add(project);
-        await db.SaveChangesAsync();
+        var (_, adminId, projectId) = await ProjectTestSetup
+            .SetupProjectWithAdminAsync(db);
 
         var handler = new UpdateProjectCommandHandler(
             db,
@@ -47,7 +44,6 @@ public class UpdateProjectCommandHandlerTests
         result.Status.Should().Be(ProjectStatus.Active.ToString());
         result.Description.Should().Be("Updated");
 
-        // Verify DB
         var updated = await db.Projects.FindAsync(projectId);
         updated!.Name.Should().Be("Payment API v2");
         updated.Status.Should().Be(ProjectStatus.Active);
@@ -59,22 +55,16 @@ public class UpdateProjectCommandHandlerTests
     {
         // Arrange
         await using var db = TestDbContextFactory.Create();
-        var internshipId = Guid.NewGuid();
-        var mentorId = Guid.NewGuid();
-        var leadId = Guid.NewGuid();
-        var projectId = Guid.NewGuid();
+        var (_, _, projectId) = await ProjectTestSetup
+            .SetupProjectWithAdminAsync(db);
+        var leadId = await ProjectTestSetup.SeedMentorAsync(db);
 
-        db.Internships.Add(EntityFactory.CreateInternship(internshipId, mentorId));
-
-        var project = EntityFactory.CreateProject(internshipId, mentorId);
-        project.Id = projectId;
-        db.Projects.Add(project);
         db.ProjectMembers.Add(EntityFactory.CreateLead(projectId, leadId));
         await db.SaveChangesAsync();
 
         var handler = new UpdateProjectCommandHandler(
             db,
-            MockCurrentUserFactory.Create(leadId, UserRole.Mentor),   // ← Mentor = Lead
+            MockCurrentUserFactory.Create(leadId, UserRole.Mentor),
             TestMapperFactory.Instance);
 
         var request = new UpdateProjectRequest(
@@ -91,20 +81,12 @@ public class UpdateProjectCommandHandlerTests
     [Fact]
     public async Task Update_MemberRole_ThrowsForbidden()
     {
-        // Arrange
+        // Arrange — Mentor là Member, không phải Lead
         await using var db = TestDbContextFactory.Create();
-        var internshipId = Guid.NewGuid();
-        var mentorId = Guid.NewGuid();
-        var memberId = Guid.NewGuid();   // không phải Lead
-        var projectId = Guid.NewGuid();
+        var (_, _, projectId) = await ProjectTestSetup
+            .SetupProjectWithAdminAsync(db);
+        var memberId = Guid.NewGuid();
 
-        db.Internships.Add(EntityFactory.CreateInternship(internshipId, mentorId));
-
-        var project = EntityFactory.CreateProject(internshipId, mentorId);
-        project.Id = projectId;
-        db.Projects.Add(project);
-
-        // Member, không phải Lead
         db.ProjectMembers.Add(new ProjectMember
         {
             ProjectId = projectId,
@@ -117,6 +99,29 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(memberId, UserRole.Mentor),
+            TestMapperFactory.Instance);
+
+        var request = new UpdateProjectRequest(
+            "Updated", null, ProjectStatus.Active, null, null);
+
+        // Act + Assert
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            handler.Handle(new UpdateProjectCommand(projectId, request),
+                CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Update_InternRole_ThrowsForbidden()
+    {
+        // Arrange — Intern không có quyền update
+        await using var db = TestDbContextFactory.Create();
+        var (_, _, projectId) = await ProjectTestSetup
+            .SetupProjectWithAdminAsync(db);
+        var internId = await ProjectTestSetup.SeedInternAsync(db);
+
+        var handler = new UpdateProjectCommandHandler(
+            db,
+            MockCurrentUserFactory.Create(internId, UserRole.Intern),
             TestMapperFactory.Instance);
 
         var request = new UpdateProjectRequest(
@@ -186,32 +191,27 @@ public class UpdateProjectCommandHandlerTests
     {
         // Arrange
         await using var db = TestDbContextFactory.Create();
-        var internshipId = Guid.NewGuid();
-        var adminId = Guid.NewGuid();
-        var projectId = Guid.NewGuid();
+        var (_, adminId, projectId) = await ProjectTestSetup
+            .SetupProjectWithAdminAsync(db);
 
-        db.Internships.Add(EntityFactory.CreateInternship(internshipId, adminId));
-
-        var project = EntityFactory.CreateProject(internshipId, adminId, "Project A");
-        project.Id = projectId;
-        db.Projects.Add(project);
-        await db.SaveChangesAsync();
+        // Đổi description, giữ nguyên tên
+        var project = await db.Projects.FindAsync(projectId);
+        var originalName = project!.Name;
 
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance);
 
-        // Đổi description, giữ nguyên tên
         var request = new UpdateProjectRequest(
-            "Project A", "New description", ProjectStatus.Active, null, null);
+            originalName, "New description", ProjectStatus.Active, null, null);
 
         // Act
         var result = await handler.Handle(
             new UpdateProjectCommand(projectId, request), CancellationToken.None);
 
         // Assert
-        result.Name.Should().Be("Project A");
+        result.Name.Should().Be(originalName);
         result.Description.Should().Be("New description");
     }
 }
