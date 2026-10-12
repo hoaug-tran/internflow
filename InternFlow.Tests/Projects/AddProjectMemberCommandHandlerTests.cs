@@ -31,7 +31,8 @@ public class AddProjectMemberCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
             mediatorMock.Object,
-            MockInternshipQueryFactory.Create().Object);
+            MockInternshipQueryFactory.Create().Object,
+db);
 
         var request = new AddProjectMemberRequest(mentorId, MemberRole.Member);
 
@@ -64,7 +65,8 @@ public class AddProjectMemberCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
             mediatorMock.Object,
-            MockInternshipQueryFactory.Create(inBatch: true).Object);
+            MockInternshipQueryFactory.Create(inBatch: true).Object,
+            db);
 
         var request = new AddProjectMemberRequest(internId, MemberRole.Member);
 
@@ -90,7 +92,8 @@ public class AddProjectMemberCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
             mediatorMock.Object,
-            MockInternshipQueryFactory.Create().Object);
+            MockInternshipQueryFactory.Create().Object,
+db);
 
         var request = new AddProjectMemberRequest(Guid.NewGuid(), MemberRole.Member);
 
@@ -115,7 +118,8 @@ public class AddProjectMemberCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
             mediatorMock.Object,
-            MockInternshipQueryFactory.Create(inBatch: false).Object);
+            MockInternshipQueryFactory.Create(inBatch: false).Object,
+            db);
 
         var request = new AddProjectMemberRequest(internId, MemberRole.Member);
 
@@ -145,7 +149,8 @@ public class AddProjectMemberCommandHandlerTests
             TestMapperFactory.Instance,
             mediatorMock.Object,
             MockInternshipQueryFactory.Create(
-                inBatch: true, mentorOfIntern: true).Object);
+                inBatch: true, mentorOfIntern: true).Object,
+                db);
 
         var request = new AddProjectMemberRequest(internId, MemberRole.Member);
 
@@ -177,7 +182,8 @@ public class AddProjectMemberCommandHandlerTests
             TestMapperFactory.Instance,
             mediatorMock.Object,
             MockInternshipQueryFactory.Create(
-                inBatch: true, mentorOfIntern: false).Object);
+                inBatch: true, mentorOfIntern: false).Object,
+                db);
 
         var request = new AddProjectMemberRequest(internId, MemberRole.Member);
 
@@ -206,7 +212,8 @@ public class AddProjectMemberCommandHandlerTests
             MockCurrentUserFactory.Create(leadId, UserRole.Mentor),
             TestMapperFactory.Instance,
             mediatorMock.Object,
-            MockInternshipQueryFactory.Create().Object);
+            MockInternshipQueryFactory.Create().Object,
+db);
 
         var request = new AddProjectMemberRequest(otherMentorId, MemberRole.Member);
 
@@ -240,7 +247,8 @@ public class AddProjectMemberCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
             mediatorMock.Object,
-            MockInternshipQueryFactory.Create().Object);
+            MockInternshipQueryFactory.Create().Object,
+db);
 
         var request = new AddProjectMemberRequest(mentorId, MemberRole.Member);
 
@@ -275,7 +283,8 @@ public class AddProjectMemberCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
             mediatorMock.Object,
-            MockInternshipQueryFactory.Create().Object);
+            MockInternshipQueryFactory.Create().Object,
+db);
 
         var request = new AddProjectMemberRequest(mentorId, MemberRole.Lead);
 

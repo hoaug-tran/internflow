@@ -26,7 +26,8 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new UpdateProjectRequest(
             Name: "Payment API v2",
@@ -65,7 +66,8 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(leadId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new UpdateProjectRequest(
             "Updated Name", null, ProjectStatus.Active, null, null);
@@ -99,7 +101,8 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(memberId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new UpdateProjectRequest(
             "Updated", null, ProjectStatus.Active, null, null);
@@ -122,7 +125,8 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new UpdateProjectRequest(
             "Updated", null, ProjectStatus.Active, null, null);
@@ -143,7 +147,8 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new UpdateProjectRequest(
             "X", null, ProjectStatus.Active, null, null);
@@ -174,7 +179,8 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         // Đổi Project A → tên "Project B" (đã tồn tại)
         var request = new UpdateProjectRequest(
@@ -201,7 +207,8 @@ public class UpdateProjectCommandHandlerTests
         var handler = new UpdateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new UpdateProjectRequest(
             originalName, "New description", ProjectStatus.Active, null, null);

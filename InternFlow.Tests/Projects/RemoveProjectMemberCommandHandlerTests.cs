@@ -39,7 +39,8 @@ public class RemoveProjectMemberCommandHandlerTests
         var handler = new RemoveProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            mediatorMock.Object);
+            mediatorMock.Object,
+ RealUnitOfWorkFactory.Create(db));
 
         // Act
         await handler.Handle(
@@ -67,7 +68,8 @@ public class RemoveProjectMemberCommandHandlerTests
         var handler = new RemoveProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            mediatorMock.Object);
+            mediatorMock.Object,
+ RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert — EnsureCanManageProjectAsync sẽ ném NotFound
         await Assert.ThrowsAsync<NotFoundException>(() =>
@@ -88,7 +90,8 @@ public class RemoveProjectMemberCommandHandlerTests
         var handler = new RemoveProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            mediatorMock.Object);
+            mediatorMock.Object,
+ RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>
@@ -120,7 +123,8 @@ public class RemoveProjectMemberCommandHandlerTests
         var handler = new RemoveProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            mediatorMock.Object);
+            mediatorMock.Object,
+ RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -141,7 +145,8 @@ public class RemoveProjectMemberCommandHandlerTests
         var handler = new RemoveProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            mediatorMock.Object);
+            mediatorMock.Object,
+ RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -185,7 +190,8 @@ public class RemoveProjectMemberCommandHandlerTests
         var handler = new RemoveProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            mediatorMock.Object);
+            mediatorMock.Object,
+ RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -228,7 +234,8 @@ public class RemoveProjectMemberCommandHandlerTests
         var handler = new RemoveProjectMemberCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            mediatorMock.Object);
+            mediatorMock.Object,
+ RealUnitOfWorkFactory.Create(db));
 
         // Act
         await handler.Handle(

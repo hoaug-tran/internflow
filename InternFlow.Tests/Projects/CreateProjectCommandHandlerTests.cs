@@ -31,7 +31,7 @@ public class CreateProjectCommandHandlerTests
         var handler = new CreateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance, db);
 
         var request = new CreateProjectRequest(
             internshipId, "Payment API", "Desc", null, null);
@@ -69,7 +69,8 @@ public class CreateProjectCommandHandlerTests
         var handler = new CreateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new CreateProjectRequest(
             internshipId, "Mentor Project", null, null, null);
@@ -101,7 +102,8 @@ public class CreateProjectCommandHandlerTests
         var handler = new CreateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new CreateProjectRequest(
             Guid.NewGuid(), "Test", null, null, null);
@@ -121,7 +123,8 @@ public class CreateProjectCommandHandlerTests
         var handler = new CreateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new CreateProjectRequest(
             Guid.NewGuid(), "Test", null, null, null);
@@ -147,7 +150,8 @@ public class CreateProjectCommandHandlerTests
         var handler = new CreateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new CreateProjectRequest(
             internshipId, "Payment API", null, null, null);
@@ -167,7 +171,8 @@ public class CreateProjectCommandHandlerTests
         var handler = new CreateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new CreateProjectRequest(
             Guid.NewGuid(), "X", null, null, null);
@@ -186,7 +191,8 @@ public class CreateProjectCommandHandlerTests
         var handler = new CreateProjectCommandHandler(
             db,
             MockCurrentUserFactory.Anonymous(),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+db);
 
         var request = new CreateProjectRequest(
             Guid.NewGuid(), "X", null, null, null);

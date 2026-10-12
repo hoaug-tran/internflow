@@ -30,7 +30,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act
         var result = await handler.Handle(
@@ -56,7 +57,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act
         var result = await handler.Handle(
@@ -82,7 +84,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<ForbiddenException>(() =>
@@ -106,7 +109,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         // Act
         var result = await handler.Handle(
@@ -133,7 +137,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act
         var result = await handler.Handle(
@@ -159,7 +164,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -183,7 +189,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -212,7 +219,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>
@@ -232,7 +240,8 @@ public class ChangeTaskStatusCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>

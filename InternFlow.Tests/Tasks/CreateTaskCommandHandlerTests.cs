@@ -31,7 +31,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQueryFactory.Create().Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+            RealUnitOfWorkFactory.Create(db));
 
         var dueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7));
         var request = new CreateTaskRequest(
@@ -69,7 +70,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             MockInternshipQueryFactory.Create().Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
@@ -95,7 +97,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             MockInternshipQueryFactory.Create().Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, Guid.NewGuid());
@@ -120,7 +123,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
@@ -149,7 +153,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(otherMentorId, UserRole.Mentor),
             MockInternshipQueryFactory.Create().Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
@@ -174,7 +179,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQueryFactory.Create().Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         // Assignee là Mentor — không phải Intern
         var request = new CreateTaskRequest(
@@ -204,7 +210,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQueryFactory.Create().Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, outsiderId);
@@ -229,7 +236,8 @@ public class CreateTaskCommandHandlerTests
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             MockInternshipQueryFactory.Create(inBatch: false).Object,
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);

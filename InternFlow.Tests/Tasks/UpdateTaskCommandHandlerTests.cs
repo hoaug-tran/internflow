@@ -30,7 +30,8 @@ public class UpdateTaskCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateTaskRequest(
             "Updated Title", "Updated Desc",
@@ -73,7 +74,8 @@ public class UpdateTaskCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateTaskRequest(
             "Task", null, TaskPriority.Medium, null, newInternId);
@@ -101,7 +103,8 @@ public class UpdateTaskCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(mentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         // Assignee mới là Mentor — không phải Intern
         var request = new UpdateTaskRequest(
@@ -128,7 +131,8 @@ public class UpdateTaskCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateTaskRequest(
             "Updated", null, TaskPriority.Medium, null, internId);
@@ -150,7 +154,8 @@ public class UpdateTaskCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(adminId, UserRole.Admin),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateTaskRequest(
             "Task", null, TaskPriority.Medium, null, Guid.NewGuid());
@@ -181,7 +186,8 @@ public class UpdateTaskCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(otherMentorId, UserRole.Mentor),
             TestMapperFactory.Instance,
-            mediatorMock.Object);
+            mediatorMock.Object,
+RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateTaskRequest(
             "Task", null, TaskPriority.Medium, null, internId);
