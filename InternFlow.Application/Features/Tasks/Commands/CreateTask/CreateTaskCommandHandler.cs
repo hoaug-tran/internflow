@@ -21,19 +21,22 @@ public sealed class CreateTaskCommandHandler
     private readonly IInternshipQueryService _internshipQuery;
     private readonly IMapper _mapper;
     private readonly IMediator _mediator;
+    private readonly IUnitOfWork _uow;
 
     public CreateTaskCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
         IInternshipQueryService internshipQuery,
         IMapper mapper,
-        IMediator mediator)
+        IMediator mediator,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _internshipQuery = internshipQuery;
         _mapper = mapper;
         _mediator = mediator;
+        _uow = uow;
     }
 
     public async Task<TaskResponse> Handle(
@@ -98,7 +101,7 @@ public sealed class CreateTaskCommandHandler
         task.CompletedAt = null;
 
         _db.Tasks.Add(task);
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
         await _mediator.Publish(
             new CacheInvalidationNotification(
                 CacheKeys.ForProject<GetTaskSummaryQuery>(task.ProjectId)),

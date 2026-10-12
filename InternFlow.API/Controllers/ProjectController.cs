@@ -2,6 +2,7 @@ using InternFlow.API.Controllers.Conventions;
 using InternFlow.Application.Features.Projects.Commands.AddProjectMember;
 using InternFlow.Application.Features.Projects.Commands.CreateProject;
 using InternFlow.Application.Features.Projects.Commands.RemoveProjectMember;
+using InternFlow.Application.Features.Projects.Commands.RestoreProjectMember;
 using InternFlow.Application.Features.Projects.Commands.UpdateProject;
 using InternFlow.Application.Features.Projects.DTOs;
 using InternFlow.Application.Features.Projects.Queries.GetProjectById;
@@ -154,5 +155,22 @@ public class ProjectsController : ApiControllerBase
         var result = await Sender.Send(new GetProjectByIdQuery(id), ct);
 
         return ApiResponse<ProjectResponse>.Ok(result);
+    }
+
+    /// <summary>Khôi phục thành viên đã xóa.</summary>
+    /// <remarks>
+    /// **Phân quyền:** Intern — chỉ worklog của mình.
+    /// </remarks>
+    [HttpPost("{id:guid}/members/{userId:guid}/restore")]
+    public async Task<ApiResponse<ProjectMemberResponse>> RestoreMember(
+    Guid id,
+    Guid userId,
+    CancellationToken ct)
+    {
+        var result = await Sender.Send(
+            new RestoreProjectMemberCommand(id, userId), ct);
+
+        return ApiResponse<ProjectMemberResponse>.Ok(
+            result, "Khôi phục thành viên thành công");
     }
 }

@@ -21,24 +21,28 @@ public sealed class ChangeTaskStatusCommandHandler
     private readonly ICurrentUserService _currentUser;
     private readonly IMapper _mapper;
     private readonly IMediator _mediator;
+    private readonly IUnitOfWork _uow;
 
     public ChangeTaskStatusCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
         IMapper mapper,
-        IMediator mediator)
+        IMediator mediator,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
         _mediator = mediator;
+        _uow = uow;
     }
 
     public async Task<TaskResponse> Handle(
         ChangeTaskStatusCommand cmd, CancellationToken ct)
     {
         var userId = _currentUser.EnsureAuthenticated();
-        var role = Enum.Parse<UserRole>(_currentUser.Role ?? string.Empty);
+        if (!Enum.TryParse<UserRole>(_currentUser.Role, out var role))
+            throw new ForbiddenException("Vai trò không hợp lệ.");
 
         var task = await _db.Tasks
             .Include(t => t.Project)
@@ -67,7 +71,6 @@ public sealed class ChangeTaskStatusCommandHandler
             };
         }
 
-        //Áp dụng thay đổi
         var oldStatus = task.Status;
         task.Status = cmd.NewStatus;
         task.UpdatedAt = DateTime.UtcNow;
@@ -81,7 +84,7 @@ public sealed class ChangeTaskStatusCommandHandler
             task.CompletedAt = null;
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
         await _mediator.Publish(
             new CacheInvalidationNotification(
                 CacheKeys.ForProject<GetTaskSummaryQuery>(task.ProjectId)),

@@ -30,7 +30,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -66,7 +67,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             Guid.NewGuid(),
@@ -93,7 +95,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(otherInternId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -119,7 +122,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -145,7 +149,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -171,7 +176,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -198,7 +204,8 @@ public class CreateWorkLogCommandHandlerTests
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.CreateForWorkLog(
                 internActive: false).Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -225,7 +232,8 @@ public class CreateWorkLogCommandHandlerTests
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.CreateForWorkLog(
                 workDateInBatch: false).Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -256,7 +264,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -288,7 +297,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -336,7 +346,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,
@@ -366,7 +377,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId, today, 4m, "Test");
@@ -393,7 +405,8 @@ public class CreateWorkLogCommandHandlerTests
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
             MockInternshipQueryFactory.Create().Object,
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+              RealUnitOfWorkFactory.Create(db));
 
         var request = new CreateWorkLogRequest(
             taskId,

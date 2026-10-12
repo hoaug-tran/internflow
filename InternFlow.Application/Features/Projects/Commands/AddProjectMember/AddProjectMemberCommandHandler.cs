@@ -20,19 +20,22 @@ public sealed class AddProjectMemberCommandHandler
     private readonly IMapper _mapper;
     private readonly IMediator _mediator;
     private readonly IInternshipQueryService _internshipQuery;
+    private readonly IUnitOfWork _uow;
 
     public AddProjectMemberCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
         IMapper mapper,
         IMediator mediator,
-        IInternshipQueryService internshipQuery)
+        IInternshipQueryService internshipQuery,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
         _mediator = mediator;
         _internshipQuery = internshipQuery;
+        _uow = uow;
     }
 
     public async Task<ProjectMemberResponse> Handle(
@@ -114,7 +117,7 @@ public sealed class AddProjectMemberCommandHandler
             });
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
         await _mediator.Publish(
             new CacheInvalidationNotification(
                 CacheKeys.ForProject<GetTaskSummaryQuery>(cmd.ProjectId)),

@@ -26,7 +26,8 @@ public class DeleteWorkLogCommandHandlerTests
 
         var handler = new DeleteWorkLogCommandHandler(
             db,
-            MockCurrentUserFactory.Create(internId, UserRole.Intern));
+            MockCurrentUserFactory.Create(internId, UserRole.Intern),
+             RealUnitOfWorkFactory.Create(db));
 
         // Act
         await handler.Handle(
@@ -48,7 +49,8 @@ public class DeleteWorkLogCommandHandlerTests
 
         var handler = new DeleteWorkLogCommandHandler(
             db,
-            MockCurrentUserFactory.Create(internId, UserRole.Intern));
+            MockCurrentUserFactory.Create(internId, UserRole.Intern),
+             RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>
@@ -70,7 +72,8 @@ public class DeleteWorkLogCommandHandlerTests
 
         var handler = new DeleteWorkLogCommandHandler(
             db,
-            MockCurrentUserFactory.Create(otherInternId, UserRole.Intern));
+            MockCurrentUserFactory.Create(otherInternId, UserRole.Intern),
+             RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>
@@ -92,7 +95,8 @@ public class DeleteWorkLogCommandHandlerTests
 
         var handler = new DeleteWorkLogCommandHandler(
             db,
-            MockCurrentUserFactory.Create(internId, UserRole.Intern));
+            MockCurrentUserFactory.Create(internId, UserRole.Intern),
+             RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<ConflictException>(() =>
@@ -117,7 +121,8 @@ public class DeleteWorkLogCommandHandlerTests
 
         var handler = new DeleteWorkLogCommandHandler(
             db,
-            MockCurrentUserFactory.Create(internId, UserRole.Intern));
+            MockCurrentUserFactory.Create(internId, UserRole.Intern),
+             RealUnitOfWorkFactory.Create(db));
 
         // Act + Assert
         await Assert.ThrowsAsync<NotFoundException>(() =>

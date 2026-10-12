@@ -29,7 +29,8 @@ public class UpdateWorkLogCommandHandlerTests
         var handler = new UpdateWorkLogCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateWorkLogRequest(
             DateOnly.FromDateTime(DateTime.UtcNow),
@@ -59,7 +60,8 @@ public class UpdateWorkLogCommandHandlerTests
         var handler = new UpdateWorkLogCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateWorkLogRequest(
             DateOnly.FromDateTime(DateTime.UtcNow),
@@ -86,7 +88,8 @@ public class UpdateWorkLogCommandHandlerTests
         var handler = new UpdateWorkLogCommandHandler(
             db,
             MockCurrentUserFactory.Create(otherInternId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateWorkLogRequest(
             DateOnly.FromDateTime(DateTime.UtcNow),
@@ -113,7 +116,8 @@ public class UpdateWorkLogCommandHandlerTests
         var handler = new UpdateWorkLogCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateWorkLogRequest(
             DateOnly.FromDateTime(DateTime.UtcNow),
@@ -160,7 +164,8 @@ public class UpdateWorkLogCommandHandlerTests
         var handler = new UpdateWorkLogCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateWorkLogRequest(today, 4m, "Updated");
 
@@ -183,7 +188,8 @@ public class UpdateWorkLogCommandHandlerTests
         var handler = new UpdateWorkLogCommandHandler(
             db,
             MockCurrentUserFactory.Create(internId, UserRole.Intern),
-            TestMapperFactory.Instance);
+            TestMapperFactory.Instance,
+             RealUnitOfWorkFactory.Create(db));
 
         var request = new UpdateWorkLogRequest(
             DateOnly.FromDateTime(DateTime.UtcNow),

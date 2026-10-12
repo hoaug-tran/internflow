@@ -17,15 +17,18 @@ public sealed class RemoveProjectMemberCommandHandler
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IMediator _mediator;
+    private readonly IUnitOfWork _uow;
 
     public RemoveProjectMemberCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
-        IMediator mediator)
+        IMediator mediator,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _mediator = mediator;
+        _uow = uow;
     }
 
     public async Task<Unit> Handle(
@@ -77,7 +80,7 @@ public sealed class RemoveProjectMemberCommandHandler
                 "User còn task chưa hoàn thành. Cần reassign trước khi xóa.");
 
         member.RemovedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
         await _mediator.Publish(
     new CacheInvalidationNotification(
         CacheKeys.ForProject<GetProjectMembersQuery>(cmd.ProjectId)),
