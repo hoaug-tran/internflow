@@ -18,17 +18,20 @@ public sealed class UpdateTaskCommandHandler
     private readonly ICurrentUserService _currentUser;
     private readonly IMapper _mapper;
     private readonly IMediator _mediator;
+    private readonly IUnitOfWork _uow;
 
     public UpdateTaskCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
         IMapper mapper,
-        IMediator mediator)
+        IMediator mediator,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
         _mediator = mediator;
+        _uow = uow;
     }
 
     public async Task<TaskResponse> Handle(
@@ -57,7 +60,7 @@ public sealed class UpdateTaskCommandHandler
         _mapper.Map(cmd.Request, task);
         task.UpdatedAt = DateTime.UtcNow;
 
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
         await _mediator.Publish(
             new CacheInvalidationNotification(
                 CacheKeys.ForProject<GetTaskSummaryQuery>(task.ProjectId)), ct);

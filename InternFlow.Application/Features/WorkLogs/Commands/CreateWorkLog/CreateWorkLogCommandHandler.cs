@@ -21,17 +21,20 @@ public sealed class CreateWorkLogCommandHandler
     private readonly ICurrentUserService _currentUser;
     private readonly IInternshipQueryService _internshipQuery;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _uow;
 
     public CreateWorkLogCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
         IInternshipQueryService internshipQuery,
-        IMapper mapper)
+        IMapper mapper,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _internshipQuery = internshipQuery;
         _mapper = mapper;
+        _uow = uow;
     }
 
     public async Task<WorkLogResponse> Handle(
@@ -132,7 +135,7 @@ public sealed class CreateWorkLogCommandHandler
         workLog.UpdatedAt = now;
 
         _db.WorkLogs.Add(workLog);
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
 
         // Load lại với navigation
         var created = await _db.WorkLogs

@@ -14,13 +14,16 @@ public sealed class DeleteWorkLogCommandHandler
 
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
+    private readonly IUnitOfWork _uow;
 
     public DeleteWorkLogCommandHandler(
         IInternFlowDbContext db,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
+        _uow = uow;
     }
 
     public async Task<Unit> Handle(
@@ -47,7 +50,7 @@ public sealed class DeleteWorkLogCommandHandler
 
         workLog.DeletedAt = DateTime.UtcNow;
         workLog.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
 
         return Unit.Value;
     }

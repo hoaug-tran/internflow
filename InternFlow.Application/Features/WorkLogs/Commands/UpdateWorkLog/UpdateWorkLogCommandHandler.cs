@@ -18,15 +18,18 @@ public sealed class UpdateWorkLogCommandHandler
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _uow;
 
     public UpdateWorkLogCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
-        IMapper mapper)
+        IMapper mapper,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
+        _uow = uow;
     }
 
     public async Task<WorkLogResponse> Handle(
@@ -67,7 +70,7 @@ public sealed class UpdateWorkLogCommandHandler
         workLog.Description = cmd.Request.Description;
         workLog.UpdatedAt = DateTime.UtcNow;
 
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
 
         var updated = await _db.WorkLogs
             .Include(w => w.TaskItem)

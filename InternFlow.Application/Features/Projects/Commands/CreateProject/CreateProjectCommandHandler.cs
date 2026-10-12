@@ -16,15 +16,18 @@ public sealed class CreateProjectCommandHandler
     private readonly IInternFlowDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _uow;
 
     public CreateProjectCommandHandler(
         IInternFlowDbContext db,
         ICurrentUserService currentUser,
-        IMapper mapper)
+        IMapper mapper,
+        IUnitOfWork uow)
     {
         _db = db;
         _currentUser = currentUser;
         _mapper = mapper;
+        _uow = uow;
     }
 
     public async Task<ProjectResponse> Handle(
@@ -67,7 +70,7 @@ public sealed class CreateProjectCommandHandler
             JoinedAt = now
         });
 
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
 
         return _mapper.Map<ProjectResponse>(project);
     }
